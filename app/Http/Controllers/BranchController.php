@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Branch;
 // use App\Town;
-// use App\State;
+// use App\State; 
 // use App\Laboratory;
 use App\Http\Requests\BranchRequest;
 

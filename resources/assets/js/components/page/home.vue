@@ -81,4 +81,5 @@
             console.log('Home mounted.');
         }
     }
+    
 </script>

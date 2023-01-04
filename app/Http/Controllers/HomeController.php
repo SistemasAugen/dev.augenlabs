@@ -659,6 +659,7 @@ class HomeController extends Controller {
 	}
 
 	public function excelStatus(Request $request) {
+		ini_set('memory_limit',-1);
 		set_time_limit(0);
 		$start      = $request->input('start') . ' 00:00:00';
 		$end        = $request->input('end') . ' 23:59:59';

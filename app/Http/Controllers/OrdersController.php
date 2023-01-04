@@ -438,6 +438,7 @@ class OrdersController extends Controller
     }
 
     public function paymentsPDV(Request $request, $branch_id) {
+        ini_set('memory_limit',-1);
         $orders = Order::where("branch_id", $branch_id)
                        // ->where("created_at",">=",$start)
                        // ->where("created_at","<=",$end)
@@ -485,6 +486,7 @@ class OrdersController extends Controller
 
     public function payments(Request $request, $branch_id = null)
     {
+        ini_set('memory_limit',-1);
         $user=Auth::user();
         // $start=$request->start;
         // $end=$request->end;

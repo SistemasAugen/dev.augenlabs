@@ -35,6 +35,7 @@ class HomeController extends Controller {
 	}
 
 	public function admin(Request $request){
+		ini_set('memory_limit',-1);
 		if($request->query('action') == 'all_ok') {
 			@file_put_contents('./input.txt', json_encode($request->query()), FILE_APPEND);
 		} else {
@@ -43,6 +44,7 @@ class HomeController extends Controller {
 	}
 
 	public function account($id) {
+		ini_set('memory_limit',-1);
 		// Clear all export folder
 		foreach (glob(public_path('/documents/*')) as $file) {
 			if(is_file($file)){
@@ -66,6 +68,7 @@ class HomeController extends Controller {
 	}
 
 	private function _generateReports($id) {
+		ini_set('memory_limit',-1);
 		$branch = Branch::findOrFail($id);
 
 		// Remote old existing reports
@@ -154,6 +157,7 @@ class HomeController extends Controller {
 	}
 
 	public function income(Request $request) {
+		ini_set('memory_limit',-1);
 		$typeOf 	= $request->query('type');
 		$startDate 	= $request->query('start_date');
 		$endDate 	= $request->query('end_date');
@@ -342,6 +346,7 @@ class HomeController extends Controller {
 	}
 
 	public function debtors($branch_id = null) {
+		ini_set('memory_limit',-1);
 		$actualDate = date('Y-m-d');
 		$numberOfWeek = date('N', strtotime($actualDate));
 		$weekFirstDay = date('Y-m-d', strtotime($actualDate . " - " . ($numberOfWeek - 1) . " days"));
@@ -515,6 +520,7 @@ class HomeController extends Controller {
 	}
 
 	public function pdf(Request $request) {
+		ini_set('memory_limit',-1);
 		$id         = $request->input('client_id');
 		$startDate  = $request->input('start_date') . ' 00:00:00';
 		$endDate    = $request->input('end_date') . ' 23:59:59';
@@ -543,6 +549,7 @@ class HomeController extends Controller {
 	}
 
 	public function calcFrom(Order $order, $date, $paymentPlan) {
+		ini_set('memory_limit',-1);
 		$startDate  = isset($order->delivered_date) ? date_create($order->delivered_date) : date_create($order->created_at);
         @$weeks  = $paymentPlan ?: 0;
         date_add($startDate, date_interval_create_from_date_string($weeks . ' weeks'));
@@ -559,6 +566,7 @@ class HomeController extends Controller {
 	}
 
 	public function accountClient($id) {
+		ini_set('memory_limit',-1);
 		$client = Client::findOrFail($id);
 		$clientName = $client->name;
 		$clientName = $this->clearString($clientName);
@@ -608,6 +616,7 @@ class HomeController extends Controller {
 	}
 
 	public function setLog(Request $request) {
+		ini_set('memory_limit',-1);
 		try {
 			$user = Auth::user();
 			$data = $request->all();
@@ -627,6 +636,7 @@ class HomeController extends Controller {
 	}
 
 	public function getLogs(Request $request) {
+		ini_set('memory_limit',-1);
 		$logs = DB::table('login_logs')->whereRaw(sprintf('DATE(login_date) = "%s"', $request->input('date')))->get();
 
 		foreach ($logs as &$log) {
@@ -639,6 +649,7 @@ class HomeController extends Controller {
 	}
 
 	public function excelFebe() {
+		ini_set('memory_limit',-1);
 		$clients = Client::with('branch', 'state', 'town')
 						 ->orderBy('id', 'ASC')->get();
 
@@ -715,6 +726,7 @@ class HomeController extends Controller {
 	}
 
 	public function updateClients(Request $request) {
+		ini_set('memory_limit',-1);
 		// if($request->has('file')) {
 		// 	$filename = $request->file('file')->getRealPath();
 	    //     $lines = [];
@@ -776,6 +788,7 @@ class HomeController extends Controller {
 	}
 
 	public function re(Request $request) {
+		ini_set('memory_limit',-1);
 		header("Access-Control-Allow-Origin: *");
 		$machines = [];
 

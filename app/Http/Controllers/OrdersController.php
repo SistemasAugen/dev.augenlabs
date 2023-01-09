@@ -89,6 +89,7 @@ class OrdersController extends Controller
     }
 
     public function search($rx = null) {
+        ini_set('memory_limit',-1);
         $user=Auth::user();
 
         if(is_null($rx))
@@ -119,7 +120,7 @@ class OrdersController extends Controller
     }
 
     public function client($id){
-
+        ini_set('memory_limit',-1);
         $orders = Order::where("client_id",$id)->where(function($query){
             $query->where("status","en_proceso")
                 ->orWhere("status","terminado")
@@ -136,6 +137,7 @@ class OrdersController extends Controller
     }
 
     public function laboratory(Request $request) {
+        ini_set('memory_limit',-1);
         if($request->has('ajax')) {
             $search     = $request->query('search');
             $sort       = $request->query('sort');
@@ -239,6 +241,9 @@ class OrdersController extends Controller
     }
 
     public function pendings(Request $request) {
+        
+        
+        ini_set('memory_limit',-1);
         $start = $request->start;
         $end = $request->end;
         $status = $request->status;

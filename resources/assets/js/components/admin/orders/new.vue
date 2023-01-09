@@ -318,7 +318,10 @@
                         v-model="cart.service"
                         @change="getDiscounts"
                         min="0"
-                        oninput="this.value = Math.abs(this.value)"
+                        @input="
+                          (event) =>
+                            (event.target.value = Math.abs(event.target.value))
+                        "
                       />
                     </td>
                     <td>${{ cart.price }}</td>

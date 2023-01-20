@@ -17,6 +17,8 @@ use App\Promo;
 use App\User;
 use JWTAuth;
 use Mail;
+use Excel;
+use App\Exports\OrdersExport;
 
 class OrdersController extends Controller
 {
@@ -89,7 +91,6 @@ class OrdersController extends Controller
     }
 
     public function search($rx = null) {
-        ini_set('memory_limit',-1);
         $user=Auth::user();
 
         if(is_null($rx))
@@ -120,7 +121,7 @@ class OrdersController extends Controller
     }
 
     public function client($id){
-        ini_set('memory_limit',-1);
+
         $orders = Order::where("client_id",$id)->where(function($query){
             $query->where("status","en_proceso")
                 ->orWhere("status","terminado")
@@ -137,7 +138,6 @@ class OrdersController extends Controller
     }
 
     public function laboratory(Request $request) {
-        ini_set('memory_limit',-1);
         if($request->has('ajax')) {
             $search     = $request->query('search');
             $sort       = $request->query('sort');
@@ -1270,5 +1270,18 @@ class OrdersController extends Controller
         ]);
 
         return response()->json(['msg' => 'Estatus de la orden se cambio a ' . $order->status ]);
+    }
+
+    public function export(Request $request)
+    {
+        
+        try {
+            Excel::store(new OrdersExport($request->data), 'pedidos.xlsx','public');
+        }catch (\Exception $e) {
+            report($e);
+            return response()->json($e,500);
+        }
+       
+        return 'ok';// Excel::download(new OrdersExport($request->data), 'pedidos.xlsx');
     }
 }

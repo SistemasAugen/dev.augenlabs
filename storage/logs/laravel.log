@@ -1,0 +1,56 @@
+[2023-01-11 18:17:45] local.ERROR: Undefined index: name {"exception":"[object] (ErrorException(code: 0): Undefined index: name at C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php:120)
+[stacktrace]
+#0 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(120): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(8, 'Undefined index...', 'C:\\\\laragon\\\\www\\\\...', 120, Array)
+#1 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Collection.php(914): Illuminate\\Foundation\\PackageManifest->Illuminate\\Foundation\\{closure}(Array, 'packages')
+#2 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(121): Illuminate\\Support\\Collection->mapWithKeys(Object(Closure))
+#3 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(97): Illuminate\\Foundation\\PackageManifest->build()
+#4 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(80): Illuminate\\Foundation\\PackageManifest->getManifest()
+#5 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterFacades.php(26): Illuminate\\Foundation\\PackageManifest->aliases()
+#6 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(213): Illuminate\\Foundation\\Bootstrap\\RegisterFacades->bootstrap(Object(Illuminate\\Foundation\\Application))
+#7 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(296): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#8 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(119): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#9 C:\\laragon\\www\\sustam\\augen-back\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 {main}
+"} 
+[2023-01-11 18:17:54] local.ERROR: Undefined index: name {"exception":"[object] (ErrorException(code: 0): Undefined index: name at C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php:120)
+[stacktrace]
+#0 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(120): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(8, 'Undefined index...', 'C:\\\\laragon\\\\www\\\\...', 120, Array)
+#1 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Collection.php(914): Illuminate\\Foundation\\PackageManifest->Illuminate\\Foundation\\{closure}(Array, 'packages')
+#2 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(121): Illuminate\\Support\\Collection->mapWithKeys(Object(Closure))
+#3 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(97): Illuminate\\Foundation\\PackageManifest->build()
+#4 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(80): Illuminate\\Foundation\\PackageManifest->getManifest()
+#5 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterFacades.php(26): Illuminate\\Foundation\\PackageManifest->aliases()
+#6 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(213): Illuminate\\Foundation\\Bootstrap\\RegisterFacades->bootstrap(Object(Illuminate\\Foundation\\Application))
+#7 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(296): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#8 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(119): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#9 C:\\laragon\\www\\sustam\\augen-back\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 {main}
+"} 
+[2023-01-11 18:17:58] local.ERROR: Undefined index: name {"exception":"[object] (ErrorException(code: 0): Undefined index: name at C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php:120)
+[stacktrace]
+#0 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(120): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(8, 'Undefined index...', 'C:\\\\laragon\\\\www\\\\...', 120, Array)
+#1 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Collection.php(914): Illuminate\\Foundation\\PackageManifest->Illuminate\\Foundation\\{closure}(Array, 'packages')
+#2 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(121): Illuminate\\Support\\Collection->mapWithKeys(Object(Closure))
+#3 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(97): Illuminate\\Foundation\\PackageManifest->build()
+#4 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(80): Illuminate\\Foundation\\PackageManifest->getManifest()
+#5 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterFacades.php(26): Illuminate\\Foundation\\PackageManifest->aliases()
+#6 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(213): Illuminate\\Foundation\\Bootstrap\\RegisterFacades->bootstrap(Object(Illuminate\\Foundation\\Application))
+#7 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(296): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#8 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(119): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#9 C:\\laragon\\www\\sustam\\augen-back\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 {main}
+"} 
+[2023-01-11 18:19:15] local.ERROR: Undefined index: name {"exception":"[object] (ErrorException(code: 0): Undefined index: name at C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php:120)
+[stacktrace]
+#0 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(120): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(8, 'Undefined index...', 'C:\\\\laragon\\\\www\\\\...', 120, Array)
+#1 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Collection.php(914): Illuminate\\Foundation\\PackageManifest->Illuminate\\Foundation\\{closure}(Array, 'packages')
+#2 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(121): Illuminate\\Support\\Collection->mapWithKeys(Object(Closure))
+#3 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(97): Illuminate\\Foundation\\PackageManifest->build()
+#4 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\PackageManifest.php(80): Illuminate\\Foundation\\PackageManifest->getManifest()
+#5 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterFacades.php(26): Illuminate\\Foundation\\PackageManifest->aliases()
+#6 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(213): Illuminate\\Foundation\\Bootstrap\\RegisterFacades->bootstrap(Object(Illuminate\\Foundation\\Application))
+#7 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(296): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#8 C:\\laragon\\www\\sustam\\augen-back\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(119): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#9 C:\\laragon\\www\\sustam\\augen-back\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 {main}
+"} 

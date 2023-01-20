@@ -40,9 +40,13 @@
             <div class="col-md-2">
                 <button class="btn btn-block btn-success" @click="getOrders" style="margin-top: 30px;">Filtrar</button>
             </div>
+            
+            <div class="col-md-3">
+                <button style="width:100px;display: none;" class="btn btn-block btn-info" @click="exportData" >Exportar</button>
+            </div>
         </div>
         <div class="col-md-12">
-            <table class="table responsive" id="rx-table" v-if="!isLoading">
+            <table class="table responsive" id="rx-table" v-if="!isLoading"  >
                 <thead>
                     <tr>
                         <th>RX</th>
@@ -116,6 +120,9 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- <b-pagination-nav :link-gen="linkGen" :number-of-pages="pagination.total" use-router></b-pagination-nav> -->
+
         </div>
         <div style="display:none;">
             <div id="discount_table">
@@ -175,9 +182,27 @@ export default {
             order: {},
             discount:0,
             order_id:"",
-            isLoading: true
+            isLoading: true,
+            /*pagination:{
+                currentpage:1,
+                total:1,
+                number: 10,
+                total_products:1,
+            },*/
         }
     },
+    /*watch:{
+        '$route.query.page':function(val){
+        if (val) {
+            this.pagination.currentpage = val;
+
+        }
+        else{
+            this.pagination.currentpage = 1;
+        }
+        this.getOrders();
+      },
+    },*/
     methods:{
         applyPayment(rx, id, order) {
             if(!confirm(`¿Estás seguro que deseas marcar la RX: ${ rx } como pagada?`))
@@ -209,7 +234,7 @@ export default {
             });
         },
         getTotal:function(subtotal,dis,dis1,iva, promo = null){
-            console.log(promo);
+            //console.log(promo);
             if(promo != null)
                 return promo;
             iva = parseFloat(iva);
@@ -226,12 +251,18 @@ export default {
             jQuery('#rx-table').bootstrapTable('destroy');
             this.isLoading = true;
 
-            axios.post(tools.url('api/orders'), this.filters)
+            //axios.post(tools.url("api/orders?page=" + this.pagination.currentpage), this.filters)
+            axios.post(tools.url("api/orders"), this.filters)
             .then((res)=>{
                 this.$parent.inPetition=false;
                 this.orders=res.data;
                 // console.log(this.orders.length);
                 this.isLoading = false;
+
+                /*this.orders=res.data.data;
+                this.pagination.total = res.data.last_page;
+                this.pagination.total_products = res.data.total;*/
+
                 setTimeout(()=>{
                     this.mountTable();
                 }, 1000);
@@ -387,6 +418,19 @@ export default {
             });
             // this.getClients();
         },
+        linkGen(pageNum) {
+            return pageNum === 1 ? '?' : `?page=${pageNum}`
+        },
+        exportData(){
+            this.$parent.inPetition=true;
+            axios.post(tools.url("/api/ordersExport"),{data:this.filters}).then((response)=>{
+                this.$parent.inPetition=false;
+                    window.open('https://sistema.augenlabs.com/storage/app/public/pedidos.xlsx','_blank')
+            }).catch((error)=>{
+                this.$parent.handleErrors(error);
+                this.$parent.inPetition=false;
+            });
+        }
     },
     mounted() {
         let date = new Date();

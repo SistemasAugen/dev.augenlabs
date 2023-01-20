@@ -332,6 +332,7 @@
                         @change="getDiscounts"
                         accept="any"
                         min="0"
+                        @input="(event) => (event.target.value = Math.abs(event.target.value))"
                         v-validate="'decimal:2'"
                         width="50px"
                       />

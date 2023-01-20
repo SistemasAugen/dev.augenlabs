@@ -128,4 +128,7 @@ Route::middleware(["jwt.auth"])->group(function() {
 
 	// Augen Mask
 	Route::get('generateRx', 'OrdersController@generateRx');
+	
+	//exportar pedidos
+	Route::post('/ordersExport', 'OrdersController@export');
 });

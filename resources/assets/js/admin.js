@@ -20,6 +20,9 @@ import componentsAdmin from './components/componentsAdmin.js';
 Vue.use(componentsAdmin);
 
 
+import BootstrapVue from 'bootstrap-vue';
+Vue.use(BootstrapVue);
+
 //Instancia principal
 var app = new Vue({
     el: '#app',

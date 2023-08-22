@@ -28,8 +28,9 @@ Route::group(['prefix' => 'v1'], function() {
     Route::get('dt_test', 'OrdersController@sendPromotionalEmail');
 
     Route::get('excel_febe', 'HomeController@excelFebe');
-    Route::get('status', 'HomeController@excelStatus');
-
+    Route::get('status', 'HomeController@excelStatusTest');
+    //Route::get('statustest', 'HomeController@excelStatusTest');
+    
     Route::get('clientes_test', 'ClientsController@test');
 
     Route::get('rx_test', function() {

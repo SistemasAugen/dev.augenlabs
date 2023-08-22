@@ -712,13 +712,108 @@ class HomeController extends Controller {
 
 				$value->computedTotal = !is_null($value->promo) ? $value->promo : floatval($value->total) - floatval($value->discount) - floatval($value->discount_admin) + floatval($value->iva);
 			}
-
+            
 			foreach ($orders as $key => $value) {
 				$orders[$key] = $orders[$key]->toArray();
 				if(is_null($orders[$key]['client'])){
 					$orders[$key] = array_merge($orders[$key], ['client'=>['name'=> 'Cliente eliminado']]);
 				}
 			}
+			libxml_use_internal_errors(true);
+			return Excel::download(new StatusExport($orders), date('Ymd') . '_' . $title  . '_STATUS.xlsx');
+		} else
+			die('Request cannot be processed');
+	}
+	public function excelStatusTest(Request $request) {
+		
+		ini_set('memory_limit',-1);
+		set_time_limit(0);
+		$start      = $request->input('start') . ' 00:00:00';
+		$end        = $request->input('end') . ' 23:59:59';
+
+		$user = User::findOrFail($request->input('user_id'));
+
+		if($request->has('q')) {
+			$field  = $request->query('q');
+
+			$title = '';
+			switch ($request->input('q')) {
+				case 'finish_date': $title = 'PROCESO_TERMINADO'; break;
+				case 'delivered_date': $title = 'TERMINADO_ENTREGADO'; break;
+				case 'payment_date': $title = 'ENTREGADO_PAGADO'; break;
+				case 'delivered_date2': $title = 'GARANTIA_ENTREGADO'; break;
+			}
+
+			if($user->hasRole('punto de ventas') || $user->hasRole('Ejecutivo')) {
+				if($field == 'delivered_date')
+					$orders =  Order::select('orders.*','clients.name as client_name','branches.name as branch_name','laboratories.name as laboratory_name')
+								->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+								->leftJoin('branches', 'orders.branch_id', '=', 'branches.id')
+								->leftJoin('laboratories', 'orders.laboratory_id', '=', 'laboratories.id')
+								->where('branch_id', $user->branch_id)
+								->whereBetween('orders.'.$field, [$start, $end])
+								->whereNull('warranty_date')
+								->orderBy('orders.'.$field, 'ASC')
+								->orderByRaw('cast(orders.rx as unsigned)')
+								->get();
+				else
+					$orders =  Order::select('orders.*','clients.name as client_name','branches.name as branch_name','laboratories.name as laboratory_name')
+								->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+								->leftJoin('branches', 'orders.branch_id', '=', 'branches.id')
+								->leftJoin('laboratories', 'orders.laboratory_id', '=', 'laboratories.id')
+								->where('branch_id', $user->branch_id)
+								->whereBetween('orders.'.$field, [$start, $end])
+								->orderBy('orders.'.$field, 'ASC')
+								->orderByRaw('cast(orders.rx as unsigned)')
+								->get();
+			}
+			else {
+				if($field == 'delivered_date')
+					$orders =  Order::select('orders.*','clients.name as client_name','branches.name as branch_name','laboratories.name as laboratory_name')
+								
+								->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+								->leftJoin('branches', 'orders.branch_id', '=', 'branches.id')
+								->leftJoin('laboratories', 'orders.laboratory_id', '=', 'laboratories.id')
+								->whereBetween('orders.'.$field, [$start, $end])
+								->whereNull('warranty_date')
+								->orderBy('orders.'.$field, 'ASC')
+								->orderByRaw('cast(orders.rx as unsigned)')
+								->get();
+				else
+					$orders =  Order::select('orders.*','clients.name as client_name','branches.name as branch_name','laboratories.name as laboratory_name')
+							
+								->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+								->leftJoin('branches', 'orders.branch_id', '=', 'branches.id')
+								->leftJoin('laboratories', 'orders.laboratory_id', '=', 'laboratories.id')
+								->whereBetween('orders.'.$field, [$start, $end])
+								->orderBy('orders.'.$field, 'ASC')
+								->orderByRaw('cast(orders.rx as unsigned)')
+								->get();
+			}
+			
+
+			
+
+			foreach ($orders as $key => $value) {
+				
+				$value->productHas;
+				$value->extras;
+				//$value->client;
+				//$value->branch;
+				//$value->laboratory;
+				//$value->branch;
+				// $value->client->facturacion;
+
+				$value->computedTotal = !is_null($value->promo) ? $value->promo : floatval($value->total) - floatval($value->discount) - floatval($value->discount_admin) + floatval($value->iva);
+				$orders[$key] = $orders[$key]->toArray();
+			}
+			
+			/*foreach ($orders as $key => $value) {
+				$orders[$key] = $orders[$key]->toArray();
+				if(is_null($orders[$key]['client'])){
+					$orders[$key] = array_merge($orders[$key], ['client'=>['name'=> 'Cliente eliminado']]);
+				}
+			}*/
 			libxml_use_internal_errors(true);
 			return Excel::download(new StatusExport($orders), date('Ymd') . '_' . $title  . '_STATUS.xlsx');
 		} else

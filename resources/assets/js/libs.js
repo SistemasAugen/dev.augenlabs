@@ -16,6 +16,7 @@ import VueCurrencyFilter from 'vue-currency-filter'
 import responsive from 'vue-responsive'
 import Autocomplete from 'vue2-autocomplete-js'
 import ToggleButton from 'vue-js-toggle-button'
+import SweetModal from 'sweet-modal-vue/src/plugin.js';
 
 import 'vue2-autocomplete-js/dist/style/vue2-autocomplete.css';
 
@@ -56,7 +57,8 @@ function fire(Vue){
 	Vue.component('autocomplete', Autocomplete);
 
 	// vue-js-toggle-button
-	Vue.use(ToggleButton)
+	Vue.use(ToggleButton);
+	Vue.use(SweetModal);
 }
 
 

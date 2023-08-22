@@ -7,7 +7,7 @@ use Maatwebsite\Excel\Concerns\FromArray;
 
 use App\Order;
 
-class OrdersExport implements FromArray 
+class OrdersExport implements FromCollection 
 {
 
     protected $data;
@@ -15,8 +15,8 @@ class OrdersExport implements FromArray
         $this->data = $data;
     }
 
-    public function array(): array{
-        
+    public function collection(){
+        ini_set('memory_limit',-1);
         /*$datarows = [];
         ini_set('memory_limit',-1);
         $start = $this->data['start'];

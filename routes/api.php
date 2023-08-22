@@ -131,4 +131,22 @@ Route::middleware(["jwt.auth"])->group(function() {
 	
 	//exportar pedidos
 	Route::post('/ordersExport', 'OrdersController@export');
+
+	Route::post('/ordersEntradasSalidas', 'OrdersController@indexEntradasSalidas');
+	
+	Route::get('/orders/requestrx/{id}', 'OrdersController@requestRx');
+	Route::post('/orders/requestrx', 'OrdersController@requestRxSave');
+	Route::get('/ordersnotes/{id}', 'OrdersController@getOrdersOpcs');
+
+	//Notas
+	Route::get('/notes',"NoteController@index");//->middleware('auth.perm:ver_catalogo');
+	Route::get('/notes/{id}',"NoteController@show");//->middleware('auth.perm:ver_catalogo');
+	Route::post('/notes',"NoteController@store");//->middleware('auth.perm:editar_catalogo');
+	Route::post('/notes/{id}',"NoteController@update");//->middleware('auth.perm:editar_catalogo');
+	Route::delete('/notes',"NoteController@destroyMultiple");//->middleware('auth.perm:editar_catalogo');
+
+	Route::post('/notesprint',"NoteController@print");//->middleware('auth.perm:editar_catalogo');
+	Route::post('/notessend',"NoteController@sendEmail");//->middleware('auth.perm:editar_catalogo');
+
+	
 });

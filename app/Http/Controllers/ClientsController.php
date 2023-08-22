@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+//Has para contraseñas
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\ClientsRequest;
 use App\Exports\FiscalExport;
 use App\Client;
@@ -116,6 +118,7 @@ class ClientsController extends Controller {
             'status'=>$request->status,
             'category'=>$request->category,
             'notification_mail'=>$request->notification_mail,
+            'password' => Hash::make($request->password)
         ));
 
         $client->save();
@@ -164,8 +167,11 @@ class ClientsController extends Controller {
         $client->facturacion->state;
         $client->facturacion->town;
         $client->branch;
+        $client->branch->laboratory;
         return response()->json($client);
     }
+
+    
 
     /**
      * Show the form for editing the specified resource.
@@ -187,6 +193,7 @@ class ClientsController extends Controller {
      */
     public function update(Request $request, $id)
     {
+        
         $client=Client::find($id);
         $client->name=$request->name;
         $client->email=$request->email;
@@ -209,7 +216,9 @@ class ClientsController extends Controller {
         $client->category = $request->category;
         $client->reason = $request->reason;
         $client->notification_mail = $request->notification_mail;
-
+        if(isset($request->password)){
+            $client->password = Hash::make($request->password);
+        }
         $client->save();
 
         if($request->discounts){
@@ -223,7 +232,68 @@ class ClientsController extends Controller {
             }
         }
         if ($request->facturacion) {
-            Facturacion::where('client_id',$client->id)->delete();
+            $facturacion=$request->facturacion;
+
+            $check_fact = Facturacion::where('client_id',$client->id)->first();
+            if ($check_fact) {
+                $fact = Facturacion::find($check_fact->id);
+                $fact->business_name_one = $facturacion['business_name_one'];
+                $fact->rfc_one = $facturacion['rfc_one'];
+                $fact->tax_regime_one = $facturacion['tax_regime_one'];
+                $fact->zipcode_one = $facturacion['zipcode_one'];
+                $fact->addres_one = $facturacion['addres_one'];
+                $fact->tez_one = $facturacion['tez_one'];
+                $fact->email_one = $facturacion['email_one'];
+                
+                $fact->business_name_two = $facturacion['business_name_two'];
+                $fact->rfc_two = $facturacion['rfc_two'];
+                $fact->tax_regime_two = $facturacion['tax_regime_two'];
+                $fact->zipcode_two = $facturacion['zipcode_two'];
+                $fact->addres_two = $facturacion['addres_two'];
+                $fact->tez_two = $facturacion['tez_two'];
+                $fact->email_two = $facturacion['email_two'];
+
+                $fact->business_name_three = $facturacion['business_name_three'];
+                $fact->rfc_three = $facturacion['rfc_three'];
+                $fact->tax_regime_three = $facturacion['tax_regime_three'];
+                $fact->zipcode_three = $facturacion['zipcode_three'];
+                $fact->addres_three = $facturacion['addres_three'];
+                $fact->tez_three = $facturacion['tez_three'];
+                $fact->email_three = $facturacion['email_three'];
+
+                $fact->save();
+            }
+            else{
+                $fact = new Facturacion();
+                $fact->client_id = $client->id;
+                $fact->business_name_one = $facturacion['business_name_one'];
+                $fact->rfc_one = $facturacion['rfc_one'];
+                $fact->tax_regime_one = $facturacion['tax_regime_one'];
+                $fact->zipcode_one = $facturacion['zipcode_one'];
+                $fact->addres_one = $facturacion['addres_one'];
+                $fact->tez_one = $facturacion['tez_one'];
+                $fact->email_one = $facturacion['email_one'];
+                
+                $fact->business_name_two = $facturacion['business_name_two'];
+                $fact->rfc_two = $facturacion['rfc_two'];
+                $fact->tax_regime_two = $facturacion['tax_regime_two'];
+                $fact->zipcode_two = $facturacion['zipcode_two'];
+                $fact->addres_two = $facturacion['addres_two'];
+                $fact->tez_two = $facturacion['tez_two'];
+                $fact->email_two = $facturacion['email_two'];
+
+                $fact->business_name_three = $facturacion['business_name_three'];
+                $fact->rfc_three = $facturacion['rfc_three'];
+                $fact->tax_regime_three = $facturacion['tax_regime_three'];
+                $fact->zipcode_three = $facturacion['zipcode_three'];
+                $fact->addres_three = $facturacion['addres_three'];
+                $fact->tez_three = $facturacion['tez_three'];
+                $fact->email_three = $facturacion['email_three'];
+
+                $fact->save();
+
+            }
+            /*Facturacion::where('client_id',$client->id)->delete();
             $facturacion=$request->facturacion;
             Facturacion::create(array(
                 'client_id'=>$client->id,
@@ -236,7 +306,7 @@ class ClientsController extends Controller {
                 'state_id'=>$facturacion['state_id'],
                 'town_id'=>$facturacion['town_id'],
                 'postal_code'=>$facturacion['postal_code']
-            ));
+            ));*/
         }
 
         return response()->json($client);
@@ -276,6 +346,7 @@ class ClientsController extends Controller {
     }
 
     public function today(Request $request, $branch_id) {
+        
         $startDate  = $request->query('from') . ' 00:00:00';
         $endDate    = $request->query('to') . ' 23:59:59';
         $consult = Order::selectRaw("orders.client_id")
@@ -318,9 +389,38 @@ class ClientsController extends Controller {
                     $client->discounts_admin += $order->discount_admin;
                     $client->ivas += $order->iva;
                 }
+                $order->branch;
+                $order->branch->laboratory;
+                
+
+                $checkform = false;
+                if ($order->rx_diagonal_ed != null && $order->rx_diagonal_ed != '') {$checkform = true;}
+                if ($order->rx_horizontal_a != null && $order->rx_horizontal_a != '') {$checkform = true;}
+                if ($order->rx_observaciones != null && $order->rx_observaciones  != '') {$checkform = true;}
+                if ($order->rx_od_adicion != null && $order->rx_od_adicion != '') {$checkform = true;}
+                if ($order->rx_od_adicion_dos != null && $order->rx_od_adicion_dos != '') {$checkform = true;}
+                if ($order->rx_od_altura != null && $order->rx_od_altura != '') {$checkform = true;}
+                if ($order->rx_od_altura_dos != null && $order->rx_od_altura_dos != '') {$checkform = true;}
+                if ($order->rx_od_cilindro != null && $order->rx_od_cilindro != '') {$checkform = true;}
+                if ($order->rx_od_cilindro_dos != null &&  $order->rx_od_cilindro_dos != '') {$checkform = true;}
+                if ($order->rx_od_dip != null && $order->rx_od_dip != '') {$checkform = true;}
+                if ($order->rx_od_dip_dos != null && $order->rx_od_dip_dos != '') {$checkform = true;}
+                if ($order->rx_od_eje != null && $order->rx_od_eje != '') {$checkform = true;}
+                if ($order->rx_od_eje_dos != null && $order->rx_od_eje_dos != '') {$checkform = true;}
+                if ($order->rx_od_esfera != null && $order->rx_od_esfera != '') {$checkform = true;}
+                if ($order->rx_od_esfera_dos != null && $order->rx_od_esfera_dos != '') {$checkform = true;}
+                if ($order->rx_puente != null && $order->rx_puente != '') {$checkform = true;}
+                if ($order->rx_servicios != null && $order->rx_servicios != '') {$checkform = true;}
+                if ($order->rx_tallado != null && $order->rx_tallado != '') {$checkform = true;}
+                if ($order->rx_tipo_ar != null && $order->rx_tipo_ar != '') {$checkform = true;}
+                if ($order->rx_tipo_armazon != null && $order->rx_tipo_armazon != '') {$checkform = true;}
+                if ($order->rx_vertical_b != null && $order->rx_vertical_b != '') {$checkform = true;}
+                $order->have_data = $checkform;
             }
 
             $client->orders = $filteredOrders;
+
+            
             array_push($clients,$client);
         }
         return response()->json($clients);

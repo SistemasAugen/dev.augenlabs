@@ -68,7 +68,14 @@ const MyRouter = new VueRouter({
         { path: '/promociones', component: require(page+'promo.vue'), meta:{title:"Promociones"}},
         { path: '/consulta', component: require(page + 'customer-query.vue'), meta: { title: "Consulta de Clientes"}},
         { path: '/registro-de-rx', component: require(page + 'orders-log.vue'), meta: { title: "Registro de RX"}},
-        { path: '/rentabilidad', component: require(page + 'profitability.vue'), meta: { title: "Rentabilidad"}}
+        { path: '/rentabilidad', component: require(page + 'profitability.vue'), meta: { title: "Rentabilidad"}},
+
+		{ path: '/entradas_salidas', component: require(page+'orders/entradas_salidas.vue'), meta:{title:"Entradas y salidas"}},
+
+		//Notas
+	    { path: '/notes', component: require(page+'notes/index.vue'), meta:{title:"Notas"}},
+	    { path: '/notes/edit', component: require(page+'notes/edit.vue'), meta:{title:"Nuevo"}},//Cuando no envian parametro
+	    { path: '/notes/edit/:id', component: require(page+'notes/edit.vue'), meta:{title:"Editar"}},//Con parametro
 	  ]
 });
 

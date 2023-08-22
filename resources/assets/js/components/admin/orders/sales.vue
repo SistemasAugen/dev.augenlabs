@@ -217,6 +217,7 @@
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Observaciones</th>
+                                    <th>RX</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -238,7 +239,7 @@
                                     <td v-else>
                                         -
                                     </td>
-                                    <td>{{ cart.total | currency }}</td>
+                                    <td>{{ cart.total | currency table}}</td>
                                     <td>{{ cart.discount | currency }}</td>
                                     <td>{{ cart.discount_admin | currency }}</td>
                                     <td>
@@ -251,6 +252,9 @@
                                     </td>
                                     <td v-if="cart.purchase.description != null">{{ cart.purchase.description }}</td>
                                     <td v-else>{{ 'N/A' }}</td>
+                                    <td><button v-if="cart.have_data" class="btn btn-success" @click="showNote(i)">RX</button>
+                                        <button v-else class="btn btn-info" >RX</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -258,6 +262,269 @@
                 </div>
             </div>
         </div>
+
+        <sweet-modal ref="showRxModal" width="60%">
+
+            <form role="form" class="form-horizontal" v-if="indx_show != null">
+                <div>	
+			        <div class="col-sm-6" style="text-align: left;">
+                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
+                    </div>
+                    <div class="col-sm-3"></div>
+                    <div class="col-sm-3" style="text-align: right;">
+                        <h3><b>{{ orders[indx_show].branch.name }}</b></h3>
+                        <h4><b>{{ orders[indx_show].branch.laboratory.name }}</b></h4>
+                    </div>
+
+                </div>
+                <hr><br>
+
+                <p style="text-align: left;"><b>CAPTURA DE DATOS</b></p>
+                <div class="form-group">
+						
+                    <div class="col-sm-3" style="text-align: left;">
+                        <label style="font-weight:300">RX:</label>
+                        <input v-model="orders[indx_show].rx_rx" disabled class="form-control" id="rx">
+                    </div>
+
+                        
+                    <div class="col-sm-3" style="text-align: left;">
+                        <label style="font-weight:300">FECHA:</label>
+                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date" disabled>
+                    </div>
+
+                        
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">CLIENTE:</label>
+                        <input v-model="orders[indx_show].rx_cliente" disabled class="form-control" id="fecha">
+				</div>
+				</div>
+
+
+                <br>
+                <p style="text-align: left;"><b>GRADUACION</b></p>
+                
+                <div class="form-group">
+                                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ESFERA</label>
+                    <input v-model="orders[indx_show].rx_od_esfera" class="form-control" id="od_esfera" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD CILINDRO</label>
+                    <input v-model="orders[indx_show].rx_od_cilindro" class="form-control" id="od_cilindro" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD EJE</label>
+                    <input v-model="orders[indx_show].rx_od_eje" class="form-control" id="od_eje" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ADICION</label>
+                    <input v-model="orders[indx_show].rx_od_adicion" class="form-control" id="od_adicion" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD DIP</label>
+                    <input v-model="orders[indx_show].rx_od_dip" class="form-control" id="od_dip" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ALTURA</label>
+                    <input v-model="orders[indx_show].rx_od_altura" class="form-control" id="od_altura"  disabled>
+                                </div>
+                </div>
+
+                <div class="form-group">
+                                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ESFERA</label>
+                    <input v-model="orders[indx_show].rx_od_esfera_dos" class="form-control" id="od_esfera_dos" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD CILINDRO</label>
+                    <input v-model="orders[indx_show].rx_od_cilindro_dos" class="form-control" id="od_cilindro_dos" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD EJE</label>
+                    <input v-model="orders[indx_show].rx_od_eje_dos" class="form-control" id="od_eje_dos" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ADICION</label>
+                    <input v-model="orders[indx_show].rx_od_adicion_dos" class="form-control" id="od_adicion_dos" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD DIP</label>
+                    <input v-model="orders[indx_show].rx_od_dip_dos" class="form-control" id="od_dip_dos" disabled>
+                                </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300">OD ALTURA</label>
+                    <input v-model="orders[indx_show].rx_od_altura_dos" class="form-control" id="od_altura_dos" disabled>
+                                </div>
+                </div>
+
+
+                <div class="form-group">
+                                <div class="col-sm-6" style="text-align: left;">
+                    <label style="font-weight:300">DISEÑO:</label>
+                    <input v-model="orders[indx_show].rx_diseno" disabled class="form-control" id="rx_diseno">
+                                </div>
+                    <div class="col-sm-6" style="text-align: left;">
+                    <label style="font-weight:300">MATERIAL:</label>
+                    <input v-model="orders[indx_show].rx_material" disabled class="form-control" id="rx_diseno">
+                                </div>
+                </div>
+
+                <div class="form-group">
+                                <div class="col-sm-6" style="text-align: left;">
+                    <label style="font-weight:300">TIPO AR:</label>
+                    <v-select v-model="orders[indx_show].rx_tipo_ar" :options="tipoarOpcs" label="label" index="value" disabled/>
+                                </div>
+                    <div class="col-sm-6" style="text-align: left;">
+                    <label style="font-weight:300">TALLADO:</label>
+                    <v-select v-model="orders[indx_show].rx_tallado" :options="talladoOpcs" label="label" index="value" disabled/>
+                                </div>
+                </div>
+                <br>
+                <p style="text-align: left;"><b>SERVICIOS</b></p>
+                <div class="form-group">
+
+                    <div class="col-sm-12" style="text-align: left;">
+                    
+                    <input v-model="orders[indx_show].rx_servicios" class="form-control" id="rx_servicios" disabled>
+                                </div>
+                </div>
+ 
+                <br>
+                <p style="text-align: left;"><b>ARMAZÓN</b></p>
+                <div class="form-group">
+
+                <div class="col-sm-4" style="text-align: left;">
+                    <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
+                    <v-select v-model="orders[indx_show].rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" disabled/>
+                </div>
+                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300;font-size: 13px;">HORIZONTAL "A"</label>
+                    <input v-model="orders[indx_show].rx_horizontal_a" class="form-control" id="rx_horizontal_a" disabled>
+                </div>
+                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300;font-size: 13px;">VERTICAL "B"</label>
+                    <input v-model="orders[indx_show].rx_vertical_b" class="form-control" id="vertical_b" disabled>
+                </div>
+                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300;font-size: 13px;">DIAGONAL "ED"</label>
+                    <input v-model="orders[indx_show].rx_diagonal_ed" class="form-control" id="diagonal_ed" disabled>
+                </div>
+                <div class="col-sm-2" style="text-align: left;">
+                    <label style="font-weight:300;font-size: 13px;">PUENTE</label>
+                    <input v-model="orders[indx_show].rx_puente" class="form-control" id="rx_puente" disabled>
+                </div>
+                </div>
+
+
+                <br>
+                <p style="text-align: left;"><b>OBSERVACIONES</b></p>
+                <div class="form-group">
+
+                <div class="col-sm-12" style="text-align: left;">
+                    <textarea v-model="orders[indx_show].rx_observaciones" class="form-control" id="rx_rx_observaciones" disabled></textarea>
+                </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-12">
+                       
+                        <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button>
+                        <button type="button" class="btn btn-dark pull-left" style="background-color: black;color: white;" @click="requestRx(indx_show)">Solicitar RX</button>
+                    </div>
+                </div>
+
+            </form>
+
+            <!-- <form role="form" class="form-horizontal" v-if="indx_show != null">
+                <p><b>Captura de datos</b></p>
+                <input-form name="rx" text="RX" :data.sync="orders[indx_show].rx_rx" disabled></input-form>
+                <input-form name="fecha" text="Fecha" :data.sync="orders[indx_show].rx_fecha" type="date" disabled></input-form>
+                <input-form name="cliente" text="Cliente" :data.sync="orders[indx_show].rx_cliente" disabled></input-form>
+
+                <p><b>Graduación</b></p>
+                <input-form name="od_esfera" text="OD Esfera" :data.sync="orders[indx_show].rx_od_esfera" disabled></input-form>
+                <input-form name="od_cilindro" text="OD Clilindro" :data.sync="orders[indx_show].rx_od_cilindro" disabled></input-form>
+                <input-form name="od_eje" text="OD Eje" :data.sync="orders[indx_show].rx_od_eje" disabled></input-form>
+                <input-form name="od_adicion" text="OD Adición" :data.sync="orders[indx_show].rx_od_adicion" disabled></input-form>
+                <input-form name="od_dip" text="OD Dip" :data.sync="orders[indx_show].rx_od_dip" disabled></input-form>
+                <input-form name="od_altura" text="OD Altura" :data.sync="orders[indx_show].rx_od_altura" disabled></input-form>
+                <hr>
+                <input-form name="od_esfera" text="OD Esfera" :data.sync="orders[indx_show].rx_od_esfera_dos" disabled></input-form>
+                <input-form name="od_cilindro" text="OD Clilindro" :data.sync="orders[indx_show].rx_od_cilindro_dos" disabled></input-form>
+                <input-form name="od_eje" text="OD Eje" :data.sync="orders[indx_show].rx_od_eje_dos" disabled></input-form>
+                <input-form name="od_adicion" text="OD Adición" :data.sync="orders[indx_show].rx_od_adicion_dos" disabled></input-form>
+                <input-form name="od_dip" text="OD Dip" :data.sync="orders[indx_show].rx_od_dip_dos" disabled></input-form>
+                <input-form name="od_altura" text="OD Altura" :data.sync="orders[indx_show].rx_od_altura_dos" disabled></input-form>
+            
+                <div class="form-group">
+                                <label class="col-sm-3 control-label">Diseño:</label>
+                                <div class="col-sm-7">
+                                        <v-select v-model="orders[indx_show].rx_diseno" :options="disenoOpcs" label="label" index="value" disabled/>
+                                </div>
+                        </div>
+
+                <div class="form-group">
+                                <label class="col-sm-3 control-label">Material:</label>
+                                <div class="col-sm-7">
+                                        <v-select v-model="orders[indx_show].rx_material" :options="materialOpcs" label="label" index="value" disabled/>
+                                </div>
+                        </div>
+
+                <div class="form-group">
+                                <label class="col-sm-3 control-label">Tipo AR:</label>
+                                <div class="col-sm-7">
+                                        <v-select v-model="orders[indx_show].rx_tipo_ar" :options="tipoarOpcs" label="label" index="value" disabled/>
+                                </div>
+                        </div>
+
+                <div class="form-group">
+                                <label class="col-sm-3 control-label">Tallado:</label>
+                                <div class="col-sm-7">
+                                        <v-select v-model="orders[indx_show].rx_tallado" :options="talladoOpcs" label="label" index="value" disabled/>
+                                </div>
+                        </div>
+
+        
+                <p><b>Armazón</b></p>
+                <div class="form-group">
+                                <label class="col-sm-3 control-label">Tipo de armazón:</label>
+                                <div class="col-sm-7">
+                                        <v-select v-model="orders[indx_show].rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" disabled/>
+                                </div>
+                        </div>
+
+
+                <input-form text='Horizontal "A"' name="horizontal_a" :data.sync="orders[indx_show].rx_horizontal_a" disabled></input-form>
+                <input-form text='Vertical "B"' name="vertical_b" :data.sync="orders[indx_show].rx_vertical_b" disabled></input-form>
+                <input-form text='Diagonal "ED" ' name="diagonal_ed" :data.sync="orders[indx_show].rx_diagonal_ed" disabled></input-form>
+                <input-form text="Puente" name="puente" :data.sync="orders[indx_show].rx_puente" disabled></input-form>
+                    
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Observaciones:</label>
+                    <div class="col-sm-7">
+                        <textarea v-model="orders[indx_show].rx_observaciones" disabled style="width:100%"></textarea>
+                    </div>
+                </div>
+
+             
+                <div class="form-group">
+                    <div class="col-sm-12">
+                       
+                        <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button>
+                        <button type="button" class="btn btn-dark pull-left" style="background-color: black;color: white;" @click="requestRx(indx_show)">Solicitar RX</button>
+                    </div>
+                </div>
+
+            </form> -->
+
+          
+        </sweet-modal>
+        <sweet-modal ref="modalloading">
+            <div class="fa-3x"><i class="fas fa-spinner fa-pulse"></i></div><br>
+            <p>Cargando...</p>
+          </sweet-modal>
     </div>
 </template>
 <script>
@@ -282,7 +549,46 @@ export default {
             filters: {
                 start: '',
                 end: '',
-            }
+            },
+            indx_show:null,
+            disenoOpcs:[
+                {value:'Monofocal HD',label:'Monofocal HD'},
+                {value:'Monofocal Asferico HD',label:'Monofocal Asferico HD'},
+                {value:'Flat-Top HD',label:'Flat-Top HD'},
+                {value:'Progresivo HD',label:'Progresivo HD'},
+                {value:'Progresivo Trinity 11-15 HD',label:'Progresivo Trinity 11-15 HD'},
+                {value:'Progresivo Trinity 13-17 Freshman HD',label:'Progresivo Trinity 13-17 Freshman HD'},
+                {value:'Progresivo Trinity 13-17 Hypersoft HD',label:'Progresivo Trinity 13-17 Hypersoft HD'},
+                {value:'Progresivo Trinity 13-17 Profesional HD',label:'Progresivo Trinity 13-17 Profesional HD'},
+                {value:'Progresivo 15-20 Urban HD',label:'Progresivo 15-20 Urban HD'},
+                {value:'Progresivo Trinity 8-12 Mini HD',label:'Progresivo Trinity 8-12 Mini HD'},
+                {value:'Progresivo Trinity Spacia HD',label:'Progresivo Trinity Spacia HD'},
+            ],
+            materialOpcs:[
+                {value:'Alto Índice',label:'Alto Índice'},
+                {value:'Parasol',label:'Parasol'},
+                {value:'Trivex',label:'Trivex'},
+                {value:'Trivex Parasol',label:'Trivex Parasol'},
+                {value:'Polarizado',label:'Polarizado'},
+                {value:'B BLOCK',label:'B BLOCK'},
+            ],
+            tipoarOpcs:[
+                {value:'Ninguno',label:'Ninguno'},
+                {value:'Matiz-e',label:'Matiz-e'},
+                {value:'Gold',label:'Gold'},
+                {value:'Azul',label:'Azul'},
+                
+            ],
+            talladoOpcs:[
+                {value:'Digital',label:'Digital'},
+                {value:'Free Form',label:'Free Form'},
+            ],
+            tipo_armazonOpcs:[
+                {value:'Metálico',label:'Metálico'},
+                {value:'Perforado',label:'Perforado'},
+                {value:'Plástico',label:'Plástico'},
+                {value:'Ranurado',label:'Ranurado'},
+            ],
         }
     },
     computed:{
@@ -430,6 +736,24 @@ export default {
             this.orders=orders;
             alertify.rxDialog(document.getElementById('modal_rx'));
         },
+        showNote(indx){
+            this.indx_show = indx;
+            this.$refs.showRxModal.open();
+        },
+        requestRx(indx){
+            this.$refs.modalloading.open();
+            this.$parent.inPetition=true;
+            axios.get(tools.url("/api/orders/requestrx/"+this.orders[indx]['id'])).then((response)=>{
+               
+                this.$parent.inPetition=false;
+                this.$refs.modalloading.close();
+                window.open(response.data,'_blank');
+            }).catch((error)=>{
+                this.$parent.handleErrors(error);
+                this.$parent.inPetition=false;
+                this.$refs.modalloading.close();
+            });
+        }
     },
     mounted(){
         let date = new Date();

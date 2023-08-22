@@ -41,22 +41,53 @@ class ExcelOrder extends Command
     {
         ini_set('memory_limit',-1);
         $datarows = [];
-        $start = date("Y-m-d H:i:s", strtotime("2022-01-01 00:00:00"));
-        $end = date("Y-m-d H:i:s", strtotime("2023-01-01 23:59:59"));
+        $start = date("Y-m-d H:i:s", strtotime("2021-01-01 00:00:00"));
+        $end = date("Y-m-d H:i:s", strtotime("2021-12-31 23:59:59"));
 
        
-        $orders = Order::query();
+        $datarows = Order::select('orders.id','orders.rx','clients.name as comertial_name','branches.name as branch_name','orders.created_at','orders.product_has_subcategory_id','orders.id as product_subcategory_name','orders.id as product_type_name','orders.id as extras_string','orders.price','orders.service','orders.total as subtotal','orders.discount','orders.promo_discount','orders.status','orders.total','orders.service','orders.discount_admin','orders.iva')
+                        ->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+                        ->leftJoin('branches', 'orders.branch_id', '=', 'branches.id');
+                        //->leftJoin('order_has_extras', 'orders.id', '=', 'order_has_extras.order_id')
+                        //->leftJoin('extras', 'order_has_extras.extra_id', '=', 'extras.id');
+                    
 
        
-        $orders = $orders->where("created_at", ">=" ,$start)->where("created_at", "<=", $end)->orderBy('created_at', 'desc');
+        $datarows = $datarows->where("orders.created_at", ">=" ,$start)->where("orders.created_at", "<=", $end)->orderBy('orders.created_at', 'desc');
 
 
-        $orders = $orders->get();
-      
+        $datarows = $datarows->get();
+       
 
-        foreach ($orders as $key => $value) {
+        foreach ($datarows as $key => $value) {
             $value->productHas;
-            $value->extras;
+            
+            
+            $value->product_has_subcategory_id = null;
+            if (isset($value['product']['name'])) {
+                $value->product_has_subcategory_id = $value['product']['name'];
+            }
+
+            $value->product_subcategory_name = null;
+            if (isset($value['product']['subcategory_name'])) {
+                $value->product_subcategory_name = $value['product']['subcategory_name'];
+            }
+
+            $value->product_type_name = null;
+            if (isset($value['product']['type_name'])) {
+                $value->product_type_name = $value['product']['type_name'];
+            }
+            
+            
+            $value->subtotal = $value['price'] + $value['service'];
+            $value->total = ( $value['total'] + $value['discount'] + $value['discount_admin'] + $value['iva'] + $value['promo_discount']);
+
+            //consulta los extras y los convierte a STRING
+            $value->extras_string = implode(',',$value->extras->pluck('name')->toArray());
+
+            //$value->subtotal = $value['price'] + $value['service'];
+            //$value->total = ( $value['total'] + $value['discount'] + $value['discount_admin'] + $value['iva'] + $value['promo_discount']);
+            /*$value->extras;
             $value->client;
             $value->branch;
 
@@ -67,13 +98,15 @@ class ExcelOrder extends Command
 
             $aux = [
                 'rx' => $value['rx'],
-                'name' => $value['client']['name'],
-                'comertial_name' => $value['client']['comertial_name'],
-                'branch_name' => $value['branch']['name'],
+                'name' => $value['client'] ? $value['client']['name'] : null,
+                'comertial_name' => $value['client'] ? $value['client']['comertial_name'] : null,
+                'branch_name' => $value['branch'] ? $value['branch']['name'] : null,
                 'created_at' => $value['created_at'],
+                
                 'product_name' => $value['product']['name'],
                 'product_subcategory_name' => $value['product']['subcategory_name'],
                 'product_type_name' => $value['product']['type_name'],
+                
                 'extras' => null,
                 'price' => $value['price'],
                 'service' => $value['service'],
@@ -84,10 +117,14 @@ class ExcelOrder extends Command
                 'total' => ( $value['total'] + $value['discount'] + $value['discount_admin'] + $value['iva'] + $value['promo_discount']),
 
             ];
-            array_push($datarows,$aux);
-        }
 
-        Excel::store(new OrdersExport($datarows), 'pedidos.xlsx','public');
+
+
+            array_push($datarows,$aux);
+            dd($datarows);*/
+        }
+        
+        Excel::store(new OrdersExport($datarows), '2021.xlsx','public');
         
         return $datarows;
     }

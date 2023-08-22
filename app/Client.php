@@ -7,7 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Client extends Authenticatable
 {
     protected $guarded=[];
-
+    protected $hidden = [
+        'password'
+    ];
     public function state()
     {
         return $this->hasOne('App\State','id','state_id');

@@ -208,6 +208,7 @@ class BranchesController extends Controller
     }
 
     public function profitability(Request $request, $id) {
+        
         $dateToStart = strtotime($request->input('period') . '-01');
 
         if ($dateToStart < strtotime('2021-08-01')) {
@@ -247,14 +248,14 @@ class BranchesController extends Controller
 
                 for($i = $begin; $i <= $end; $i->modify('+1 day')) {
                     $date = $i->format("Y-m-d");
-
+                    
                     if($date > date('Y-m-d')) {
                         $dataset[$date] = 0;
                         continue;
                     } else if($date < date('Y-m-d')) {
-                        $computedProfitability = Profitability::where('branch_id', $branch->id)
+                        $computedProfitability = null;/*Profitability::where('branch_id', $branch->id)
                                                         ->where('estimated_at', $date)
-                                                        ->first();
+                                                        ->first();*/
 
 
                         if(isset($computedProfitability)) {
@@ -262,10 +263,11 @@ class BranchesController extends Controller
                         } else {
                             $orders = $branch->orders()
                                              ->whereRaw("DATE(delivered_date) = '$date'")
+                                             ->where('warranty_date',null)
                                              ->get();
                             $partialAmount = 0.0;
                             foreach ($orders as $order) {
-                                $partialOrder = floatval($order->total)  - floatval($order->discount) - floatval($order->discount_admin) + floatval($order->iva);
+                                $partialOrder = floatval($order->total)  - floatval($order->discount) - floatval($order->discount_admin);//a+ floatval($order->iva);
                                 $partialCost = $this->_getCost($order);
                                 $partialAmount += ($partialOrder - $partialCost);
                             }
@@ -289,11 +291,12 @@ class BranchesController extends Controller
                     } else {
                         $orders = $branch->orders()
                                          ->whereRaw("DATE(delivered_date) = '$date'")
+                                         ->where('warranty_date',null)
                                          ->get();
 
                         $partialAmount = 0.0;
                         foreach ($orders as $order) {
-                            $partialOrder = floatval($order->total)  - floatval($order->discount) - floatval($order->discount_admin) + floatval($order->iva);
+                            $partialOrder = floatval($order->total)  - floatval($order->discount) - floatval($order->discount_admin);// + floatval($order->iva);
                             $partialCost = $this->_getCost($order);
                             $partialAmount += ($partialOrder - $partialCost);
                         }
@@ -305,10 +308,12 @@ class BranchesController extends Controller
                             $dataset[$date] = $subtotal;
                     }
                 }
+                $branch->subtotal = $subtotal;
+               
             }
-
+            $last_k = array_key_last($dataset);
             $topLimit = $base + (120000 * count($branches));
-            return Response::set(true, null, compact('dataset', 'base', 'topLimit'));
+            return Response::set(true, null, compact('dataset', 'base', 'topLimit','branches'));
             exit;
         }
         $branch = Branch::findOrFail($id);
@@ -339,15 +344,21 @@ class BranchesController extends Controller
                 $dataset[$date] = 0;
                 continue;
             } else if($date < date('Y-m-d')) {
-                $computedProfitability = Profitability::where('branch_id', $id)
+                $orders = $branch->orders()
+                                     ->whereRaw("DATE(delivered_date) = '$date'")
+                                     ->where('warranty_date',null)
+                                     ->get();
+            
+                $computedProfitability = null;/*Profitability::where('branch_id', $id)
                                                 ->where('estimated_at', $date)
-                                                ->first();
+                                                ->first();*/
                 if(isset($computedProfitability)) {
                     $subtotal = floatval($computedProfitability->amount);
                     $dataset[$date] = round($subtotal);
                 } else {
                     $orders = $branch->orders()
                                      ->whereRaw("DATE(delivered_date) = '$date'")
+                                     ->where('warranty_date',null)
                                      ->get();
                     $partialAmount = 0.0;
                     foreach ($orders as $order) {
@@ -359,12 +370,12 @@ class BranchesController extends Controller
                     $subtotal += $partialAmount;
                     $dataset[$date] = round($subtotal, 2);
 
-                    Profitability::create([
+                    /*Profitability::create([
                         'branch_id' => $id,
                         'estimated_at' => $date,
                         'base'  => $base,
                         'amount' => round($subtotal, 2)
-                    ]);
+                    ]);*/
                     //
                     // $computedProfitability = Profitability::where('branch_id', $branch->id)
                     //                                       ->where('estimated_at', $date)
@@ -378,6 +389,7 @@ class BranchesController extends Controller
             } else {
                 $orders = $branch->orders()
                                  ->whereRaw("DATE(delivered_date) = '$date'")
+                                 ->where('warranty_date',null)
                                  ->get();
                 $partialAmount = 0.0;
                 foreach ($orders as $order) {
@@ -404,7 +416,7 @@ class BranchesController extends Controller
             $dt = min($topLimit, $dt);
         }
 
-        return Response::set(true, null, compact('dataset', 'base', 'topLimit'));
+        return Response::set(true, null, compact('dataset', 'base', 'topLimit','subtotal'));
     }
 
     private function _getCost($order) {

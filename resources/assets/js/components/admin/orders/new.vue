@@ -261,6 +261,7 @@
                     <th>Costo</th>
                     <th v-if="!isAugenLabs">Servicio</th>
                     <th>Subtotal</th>
+                    <th>RX</th>
                     <th>Eliminar</th>
                   </tr>
                 </thead>
@@ -313,31 +314,32 @@
                     </td>
                     <td v-else>
                       <input
-                        type="number"
+                        
                         class="form-control"
                         v-model="cart.service"
                         @change="getDiscounts"
-                        min="0"
-                        @input="
-                          (event) =>
-                            (event.target.value = Math.abs(event.target.value))
-                        "
+                        
+                        @keypress="isNumber($event)"
                       />
                     </td>
                     <td>${{ cart.price }}</td>
                     <td v-if="!isAugenLabs">
                       <input
-                        type="number"
+                        
                         v-model="cart.service"
                         @change="getDiscounts"
-                        accept="any"
-                        min="0"
-                        @input="(event) => (event.target.value = Math.abs(event.target.value))"
-                        v-validate="'decimal:2'"
+                        
+                        @keypress="isNumber($event)"
                         width="50px"
+                        id="aaaa"
                       />
                     </td>
                     <td>${{ cart.total }}</td>
+                    <td>
+                      <button v-if="cart.rx_data.have_data" class="btn btn-success btn-sm" @click="openModalRx(i)">RX</button>
+                      <button v-else class="btn btn-info btn-sm" @click="openModalRx(i)">RX</button>
+                    </td>
+
                     <td>
                       <button
                         class="btn btn-danger btn-sm"
@@ -457,12 +459,7 @@
                         Total:
                       </td>
                       <td
-                        style="
-                          font-size: 28px;
-                          position: absolute;
-                          font-weight: bold;
-                          margin-left: -12px;
-                        "
+                        style="font-size: 28px;position: absolute;font-weight: bold;margin-left: -12px;"
                         v-if="isAugenLabs"
                       >
                         ${{
@@ -474,12 +471,7 @@
                         }}
                       </td>
                       <td
-                        style="
-                          font-size: 28px;
-                          position: absolute;
-                          font-weight: bold;
-                          margin-left: -12px;
-                        "
+                        style="font-size: 28px;position: absolute;font-weight: bold; margin-left: -12px;"
                         v-else
                       >
                         ${{
@@ -540,9 +532,7 @@
           </div>
           <div
             class="col-md-6 col-md-offset-3"
-            v-for="type in types"
-            :key="type.id"
-          >
+            v-for="(type,indx) in types" :key="type.id">
             <!-- <br> -->
             <!-- <br> -->
             <button
@@ -645,6 +635,268 @@
         <small>*Precios sin I.V.A.</small>
       </div>
     </div>
+
+   
+    <sweet-modal ref="modalRx" width="60%">
+
+      <form role="form" class="form-horizontal" @submit.prevent="newBranch($event.target)" v-if="index_prod != null">
+        <div class="form-group">
+						
+						<div class="col-sm-6" style="text-align: left;">
+                <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
+						</div>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-3" style="text-align: right;">
+                <h3><b>{{ client.branch.name }}</b></h3>
+                <h4><b>{{ client.branch.laboratory.name }}</b></h4>
+						</div>
+
+        </div>
+        <hr><br>
+        <p style="text-align: left;"><b>CAPTURA DE DATOS</b></p>
+        <div class="form-group">
+						
+						<div class="col-sm-3" style="text-align: left;">
+              <label style="font-weight:300">RX:</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_rx" disabled class="form-control" id="rx">
+						</div>
+
+            
+						<div class="col-sm-3" style="text-align: left;">
+              <label style="font-weight:300">FECHA:</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_fecha" class="form-control" id="fecha" type="date" disabled>
+						</div>
+
+            
+						<div class="col-sm-6" style="text-align: left;">
+              <label style="font-weight:300">CLIENTE:</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_cliente" disabled class="form-control" id="fecha">
+						</div>
+				</div>
+
+        <!-- <input-form name="rx" text="RX" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_rx" disabled></input-form>
+        <input-form name="fecha" text="Fecha" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_fecha" type="date"></input-form>
+        <input-form name="cliente" text="Cliente" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_cliente" disabled></input-form> -->
+        <br>
+        <p style="text-align: left;"><b>GRADUACION</b></p>
+        
+        <div class="form-group">
+						<div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ESFERA</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_esfera" class="form-control" id="od_esfera" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD CILINDRO</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_cilindro" class="form-control" id="od_cilindro" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD EJE</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_eje" class="form-control" id="od_eje" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ADICION</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_adicion" class="form-control" id="od_adicion" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD DIP</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_dip" class="form-control" id="od_dip" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ALTURA</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_altura" class="form-control" id="od_altura" @change="changeRXdata(index_prod)">
+						</div>
+        </div>
+
+        <div class="form-group">
+						<div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ESFERA</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_esfera_dos" class="form-control" id="od_esfera_dos" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD CILINDRO</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_cilindro_dos" class="form-control" id="od_cilindro_dos" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD EJE</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_eje_dos" class="form-control" id="od_eje_dos" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ADICION</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_adicion_dos" class="form-control" id="od_adicion_dos" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD DIP</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_dip_dos" class="form-control" id="od_dip_dos" @change="changeRXdata(index_prod)">
+						</div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300">OD ALTURA</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_od_altura_dos" class="form-control" id="od_altura_dos" @change="changeRXdata(index_prod)">
+						</div>
+        </div>
+
+        <!-- <input-form name="od_esfera" text="OD Esfera" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_esfera" ></input-form>
+        <input-form name="od_cilindro" text="OD Clilindro" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_cilindro" ></input-form>
+        <input-form name="od_eje" text="OD Eje" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_eje" ></input-form>
+        <input-form name="od_adicion" text="OD Adición" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_adicion" ></input-form>
+        <input-form name="od_dip" text="OD Dip" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_dip" ></input-form>
+        <input-form name="od_altura" text="OD Altura" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_altura" ></input-form>
+        <hr>
+        <input-form name="od_esfera" text="OD Esfera" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_esfera_dos" ></input-form>
+        <input-form name="od_cilindro" text="OD Clilindro" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_cilindro_dos" ></input-form>
+        <input-form name="od_eje" text="OD Eje" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_eje_dos" ></input-form>
+        <input-form name="od_adicion" text="OD Adición" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_adicion_dos" ></input-form>
+        <input-form name="od_dip" text="OD Dip" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_dip_dos" ></input-form>
+        <input-form name="od_altura" text="OD Altura" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_od_altura_dos" ></input-form>
+       -->
+        <!-- <div class="form-group">
+						<label class="col-sm-3 control-label">Diseño:</label>
+						<div class="col-sm-7">
+								<v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_diseno" :options="disenoOpcs" label="label" index="value"/>
+						</div>
+				</div> 
+        <input-form name="rx_diseno" text="Diseño" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_diseno" disabled></input-form>
+        -->
+
+        <!-- <div class="form-group">
+						<label class="col-sm-3 control-label">Material:</label>
+						<div class="col-sm-7">
+								<v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_material" :options="materialOpcs" label="label" index="value"/>
+						</div>
+				</div> -
+        <input-form name="rx_material" text="Material" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_material" disabled></input-form>
+      -->
+        <div class="form-group">
+						<div class="col-sm-6" style="text-align: left;">
+              <label style="font-weight:300">DISEÑO:</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_diseno" disabled class="form-control" id="rx_diseno">
+						</div>
+            <div class="col-sm-6" style="text-align: left;">
+              <label style="font-weight:300">MATERIAL:</label>
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_material" disabled class="form-control" id="rx_material">
+						</div>
+        </div>
+
+        <div class="form-group">
+						<div class="col-sm-6" style="text-align: left;">
+              <label style="font-weight:300">TIPO AR:</label>
+              <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_ar" :options="tipoarOpcs" label="label" index="value" @change="changeRXdata(index_prod)" />
+						</div>
+            <div class="col-sm-6" style="text-align: left;">
+              <label style="font-weight:300">TALLADO:</label>
+              <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tallado" :options="talladoOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
+						</div>
+        </div>
+        <br>
+        <p style="text-align: left;"><b>SERVICIOS</b></p>
+        <div class="form-group">
+
+            <div class="col-sm-12" style="text-align: left;">
+            
+              <input v-model="$parent.sale.cart[index_prod].rx_data.rx_servicios" class="form-control" id="rx_servicios" @change="changeRXdata(index_prod)">
+						</div>
+        </div>
+
+        <!-- <div class="form-group">
+						<label class="col-sm-3 control-label">Tipo AR:</label>
+						<div class="col-sm-7">
+								<v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_ar" :options="tipoarOpcs" label="label" index="value"/>
+						</div>
+				</div>
+        
+
+        <div class="form-group">
+						<label class="col-sm-3 control-label">Tallado:</label>
+						<div class="col-sm-7">
+								<v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tallado" :options="talladoOpcs" label="label" index="value"/>
+						</div>
+				</div> -->
+
+ 
+        <br>
+        <p style="text-align: left;"><b>ARMAZÓN</b></p>
+        <div class="form-group">
+
+          <div class="col-sm-4" style="text-align: left;">
+            <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
+            <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
+          </div>
+          <div class="col-sm-2" style="text-align: left;">
+            <label style="font-weight:300;font-size: 13px;">HORIZONTAL"A"</label>
+            <input v-model="$parent.sale.cart[index_prod].rx_data.rx_horizontal_a" class="form-control" id="rx_horizontal_a" @change="changeRXdata(index_prod)">
+          </div>
+          <div class="col-sm-2" style="text-align: left;">
+            <label style="font-weight:300;font-size: 13px;">VERTICAL"B"</label>
+            <input v-model="$parent.sale.cart[index_prod].rx_data.rx_vertical_b" class="form-control" id="vertical_b" @change="changeRXdata(index_prod)">
+          </div>
+          <div class="col-sm-2" style="text-align: left;">
+            <label style="font-weight:300;font-size: 13px;">DIAGONAL"ED"</label>
+            <input v-model="$parent.sale.cart[index_prod].rx_data.rx_diagonal_ed" class="form-control" id="diagonal_ed" @change="changeRXdata(index_prod)">
+          </div>
+          <div class="col-sm-2" style="text-align: left;">
+            <label style="font-weight:300;font-size: 13px;">PUENTE</label>
+            <input v-model="$parent.sale.cart[index_prod].rx_data.rx_puente" class="form-control" id="rx_puente" @change="changeRXdata(index_prod)">
+          </div>
+        </div>
+
+        <!-- <div class="form-group">
+						<label class="col-sm-3 control-label">Tipo de armazón:</label>
+						<div class="col-sm-7">
+								<v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value"/>
+						</div>
+				</div>
+
+
+        <input-form text='Horizontal "A"' name="horizontal_a" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_horizontal_a" ></input-form>
+        <input-form text='Vertical "B"' name="vertical_b" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_vertical_b" ></input-form>
+        <input-form text='Diagonal "ED" ' name="diagonal_ed" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_diagonal_ed" ></input-form>
+        <input-form text="Puente" name="puente" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_puente" ></input-form> -->
+        <br>
+        <p style="text-align: left;"><b>OBSERVACIONES</b></p>
+        <div class="form-group">
+
+          <div class="col-sm-12" style="text-align: left;">
+            <textarea v-model="$parent.sale.cart[index_prod].rx_data.rx_observaciones" class="form-control" id="rx_rx_observaciones" @change="changeRXdata(index_prod)"></textarea>
+          </div>
+        </div>
+
+        <!-- <text-form name="observaciones" text="Observaciones" :data.sync="$parent.sale.cart[index_prod].rx_data.rx_observaciones" ></text-form> -->
+
+        <!-- <input-form name="estado_cuenta" text="Estado de cuenta" :data.sync="$parent.sale.cart[index_prod].note.estado_cuenta" ></input-form>
+        <input-form name="semana" text="Semana" :data.sync="$parent.sale.cart[index_prod].note.semana" ></input-form>
+        <input-form name="optica" text="Doctor/Óptica" :data.sync="$parent.sale.cart[index_prod].note.optica" ></input-form>
+
+        <input-form name="fecha" text="Fecha" :data.sync="$parent.sale.cart[index_prod].note.fecha" type="date"></input-form>
+        <input-form name="rx" text="RX´S" :data.sync="$parent.sale.cart[index_prod].note.rx" ></input-form>
+        <input-form name="descripcion" text="Descripcion" :data.sync="$parent.sale.cart[index_prod].note.descripcion" ></input-form>
+        <input-form name="importe" text="Importe" :data.sync="$parent.sale.cart[index_prod].note.importe" ></input-form>
+
+        <input-form name="total" text="Total" :data.sync="$parent.sale.cart[index_prod].note.total" ></input-form>
+
+        <hr>
+        <text-form name="observaciones" text="Observaciones" :data.sync="$parent.sale.cart[index_prod].note.observaciones" ></text-form> -->
+          
+          <div class="form-group">
+						<div class="col-sm-12">
+							
+              <!-- <button type="button" class="btn btn-dark pull-left" style="background-color: black;color: white;" @click="requestRx(index_prod)">Solicitar RX</button>
+               
+							<button type="submit" class="btn btn-success pull-right" @click="$refs.modalRx.close()"><i class="far fa-save"></i> Guardar</button> -->
+							<button type="button" class="btn btn-default pull-right" @click="$refs.modalRx.close()">Cancelar</button>
+						</div>
+					</div>
+
+      </form>
+        
+        
+      </sweet-modal>
+
+      <sweet-modal :icon="modal.icon" :blocking="modal.block" :hide-close-button="modal.block"  ref="modalalert">
+        <div class="fa-3x" v-if="modal.icon== ''"><i class="fas fa-spinner fa-pulse"></i></div><br/>
+        <div v-html="modal.msg"></div>
+       
+      </sweet-modal>
+
   </div>
 </template>
 <script>
@@ -695,6 +947,53 @@ export default {
       rx: "",
       order: {},
       orderInProcess: false,
+
+
+      index_prod:null,
+      disenoOpcs:[
+          {value:'Monofocal HD',label:'Monofocal HD'},
+          {value:'Monofocal Asferico HD',label:'Monofocal Asferico HD'},
+          {value:'Flat-Top HD',label:'Flat-Top HD'},
+          {value:'Progresivo HD',label:'Progresivo HD'},
+          {value:'Progresivo Trinity 11-15 HD',label:'Progresivo Trinity 11-15 HD'},
+          {value:'Progresivo Trinity 13-17 Freshman HD',label:'Progresivo Trinity 13-17 Freshman HD'},
+          {value:'Progresivo Trinity 13-17 Hypersoft HD',label:'Progresivo Trinity 13-17 Hypersoft HD'},
+          {value:'Progresivo Trinity 13-17 Profesional HD',label:'Progresivo Trinity 13-17 Profesional HD'},
+          {value:'Progresivo 15-20 Urban HD',label:'Progresivo 15-20 Urban HD'},
+          {value:'Progresivo Trinity 8-12 Mini HD',label:'Progresivo Trinity 8-12 Mini HD'},
+          {value:'Progresivo Trinity Spacia HD',label:'Progresivo Trinity Spacia HD'},
+      ],
+      materialOpcs:[
+          {value:'Alto Índice',label:'Alto Índice'},
+          {value:'Parasol',label:'Parasol'},
+          {value:'Trivex',label:'Trivex'},
+          {value:'Trivex Parasol',label:'Trivex Parasol'},
+          {value:'Polarizado',label:'Polarizado'},
+          {value:'B BLOCK',label:'B BLOCK'},
+      ],
+      tipoarOpcs:[
+          {value:'Ninguno',label:'Ninguno'},
+          {value:'Matiz-e',label:'Matiz-e'},
+          {value:'Gold',label:'Gold'},
+          {value:'Azul',label:'Azul'},
+          
+      ],
+      talladoOpcs:[
+          {value:'Digital',label:'Digital'},
+          {value:'Free Form',label:'Free Form'},
+      ],
+      tipo_armazonOpcs:[
+          {value:'Metálico',label:'Metálico'},
+          {value:'Perforado',label:'Perforado'},
+          {value:'Plástico',label:'Plástico'},
+          {value:'Ranurado',label:'Ranurado'},
+      ],
+      modal:{
+        icon:'',
+        block:false,
+        msg:null
+      }
+
     };
   },
   computed: {
@@ -704,6 +1003,7 @@ export default {
     isPaqueteria: function () {
       return this.client.id == 1901;
     },
+    
   },
   watch: {
     "client.state.value": {
@@ -748,6 +1048,7 @@ export default {
     onComplete: function () {
       if (!this.orderInProcess) {
         this.orderInProcess = true;
+       
         alertify.confirm("¿Seguro que deseas realizar esta venta?", () => {
           this.$parent.inPetition = true;
           let params = window._.cloneDeep(this.$parent.sale);
@@ -766,6 +1067,7 @@ export default {
               rx: row.rx,
               percent_discount: row.percent_discount,
               extras: extras,
+              rx_data: row.rx_data
             };
           });
           axios
@@ -785,6 +1087,9 @@ export default {
               this.$parent.handleErrors(err);
             });
         });
+      }
+      else{
+        console.log('next');
       }
     },
     getStates: function () {
@@ -1080,6 +1385,40 @@ export default {
         product: product,
         rx: this.rx,
         not_ar: 0,
+        rx_data:{
+          rx_rx:null,
+          rx_fecha:null,
+          rx_cliente:null,
+
+          rx_od_esfera:null,
+          rx_od_cilindro:null,
+          rx_od_eje:null,
+          rx_od_adicion:null,
+          rx_od_dip:null,
+          rx_od_altura:null,
+          rx_od_esfera:null,
+
+          rx_od_esfera_dos:null,
+          rx_od_cilindro_dos:null,
+          rx_od_eje_dos:null,
+          rx_od_adicion_dos:null,
+          rx_od_dip_dos:null,
+          rx_od_altura_dos:null,
+          rx_od_esfera_dos:null,
+          
+          rx_diseno:null,
+          rx_material:null,
+          rx_tipo_ar:null,
+          rx_tallado:null,
+          rx_tipo_armazon:null,
+          rx_horizontal_a:null,
+          rx_vertical_b:null,
+          rx_diagonal_ed:null,
+          rx_puente:null,
+          rx_observaciones:null,
+          rx_servicios:null,
+          have_data:false
+        }
       };
 
       if (this.isAugenLabs) order.service = 1;
@@ -1093,7 +1432,9 @@ export default {
 
       order.not_ar = no_AR;
       order.ar = ar;
-
+      if(ar == 1){
+          order.rx_data.rx_tipo_ar = 'Matiz-e';
+      }
       if (product.extras.length == 0 || (no_AR == 1 && ar == 1)) {
         alertify.closeAll();
         this.$parent.sale.cart.push(order);
@@ -1116,6 +1457,8 @@ export default {
         this.extras = product.extras;
         alertify.extrasDialog(document.getElementById("extras_table"));
       }
+
+     
     },
     addExtra: function (extra) {
       var flag = 1;
@@ -1316,6 +1659,96 @@ export default {
       if (data) return data;
       else return { price: 0 };
     },
+    openModalRx(indx){
+        this.index_prod = indx;
+
+        var fechaActual = new Date();
+          var dia = fechaActual.getDate();
+          var mes = fechaActual.getMonth() + 1; // Los meses comienzan desde 0, por lo que sumamos 1
+          var año = fechaActual.getFullYear();
+
+          // Asegurarse de que el día y el mes tienen siempre dos dígitos
+          if (dia < 10) {
+            dia = '0' + dia;
+          }
+          if (mes < 10) {
+            mes = '0' + mes;
+          }
+
+          var fechaFormateada = año + '-' + mes + '-' + dia;
+
+        this.$parent.sale.cart[indx].rx_data.rx_rx = this.$parent.sale.cart[indx].rx;
+        this.$parent.sale.cart[indx].rx_data.rx_fecha = fechaFormateada;
+        this.$parent.sale.cart[indx].rx_data.rx_cliente = this.client.name;
+        this.$parent.sale.cart[indx].rx_data.rx_diseno = this.$parent.sale.cart[indx].product.name;
+        this.$parent.sale.cart[indx].rx_data.rx_material = this.$parent.sale.cart[indx].product.category_name;
+        this.$parent.sale.cart[indx].rx_data.rx_caracteristicas = this.$parent.sale.cart[indx].product.type_name;
+
+        
+        this.$refs.modalRx.open();
+    },
+    isNumber: function(evt) {
+      evt = (evt) ? evt : window.event;
+      var charCode = (evt.which) ? evt.which : evt.keyCode;
+      if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
+    },
+    requestRx(indx){
+        
+        this.$parent.inPetition=true;
+        var dataform = {
+          'rx':this.$parent.sale.cart[indx].rx_data,
+          'user':this.client
+        };
+        axios.post(tools.url("/api/orders/requestrx"),dataform).then((response)=>{
+               
+            this.$parent.inPetition=false;
+            this.modal.block = false;
+            this.modal.icon = 'success';
+            this.modal.msg = 'RX eviada correctamente...';
+            this.$refs.modalalert.open();
+        }).catch((error)=>{
+            this.$parent.handleErrors(error);
+            this.$parent.inPetition=false;
+            this.modal.block = false;
+            this.modal.icon = 'error';
+            this.modal.msg = error.data.msg;
+            this.$refs.modalalert.open();
+           
+        });
+    },
+    changeRXdata(indx){
+
+
+      for (let x = 0; x < this.$parent.sale.cart.length; x++) {
+          var checkform = false;
+          if (this.$parent.sale.cart[x]['rx_data']['rx_diagonal_ed'] != null && this.$parent.sale.cart[x]['rx_data']['rx_diagonal_ed'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_horizontal_a'] != null && this.$parent.sale.cart[x]['rx_data']['rx_horizontal_a'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_observaciones'] != null && this.$parent.sale.cart[x]['rx_data']['rx_observaciones']  != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_adicion'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_adicion'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_adicion_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_adicion_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_altura'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_altura'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_altura_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_altura_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro_dos'] != null &&  this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_dip'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_dip'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_dip_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_dip_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_eje'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_eje'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_eje_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_eje_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_esfera'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_esfera'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_od_esfera_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_esfera_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_puente'] != null && this.$parent.sale.cart[x]['rx_data']['rx_puente'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_servicios'] != null && this.$parent.sale.cart[x]['rx_data']['rx_servicios'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_tallado'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tallado'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_tipo_ar'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tipo_ar'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_tipo_armazon'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tipo_armazon'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[x]['rx_data']['rx_vertical_b'] != null && this.$parent.sale.cart[x]['rx_data']['rx_vertical_b'] != '') {checkform = true;}
+          this.$parent.sale.cart[x]['rx_data']['have_data'] = checkform;
+        }
+    }
   },
   mounted() {
     this.getStates();

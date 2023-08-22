@@ -17,19 +17,22 @@
         <tr>
             <td>{{ $order['rx'] }}</td>
             <td>{{ $order['created_at'] }}</td>
-            <td>{{ $order['branch']['name'] }}</td>
-            <td>{{ $order['laboratory']['name'] }}</td>
-            <td>{{ $order['client']['name'] }}</td>
+            <td>{{ $order['branch_name'] }}</td>
+            <td>{{ $order['laboratory_name'] }}</td>
+            <td>{{ $order['client_name'] }}</td>
             <td>{{ @$order['product']['name'] ?? 'NO DISPONIBLE'  }}</td>
             <td>{{ @$order['product']['subcategory_name'] ?? 'NO DISPONIBLE' }}</td>
             <td>{{ isset($order['product']) && isset($order['product']['type_name']) ? $order['product']['type_name'] : 'NO DISPONIBLE' }}</td>
             <td>
-                @if (count($order['extras']) > 0)
-                    {{ implode(', ', array_map(function($e) {
-                        return $e['name'];
-                    }, $order['extras'])) }}
-                @else
-                    -
+                 @if ($order['extras'] != null)
+                   
+                    @if (count($order['extras']) > 0)
+                        {{ implode(', ', array_map(function($e) {
+                            return $e['name'];
+                        }, $order['extras'])) }}
+                    @else
+                        -
+                    @endif
                 @endif
             </td>
 

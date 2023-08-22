@@ -294,9 +294,15 @@ export default {
             });
         },
         selectOrder:function(order){
-            // if(order.status=="en_proceso"){
-            //     return false;
-            // }
+            
+            if(order.status == "en_proceso"){
+                console.log(order.client.status);
+                if (order.client.status == 'Inactivo') {
+                    alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
+                    return false;
+                }
+                 
+            }
             this.order=order;
             alertify.statusDialog(document.getElementById('status_table'));
         },

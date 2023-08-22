@@ -18,12 +18,18 @@ use App\User;
 use JWTAuth;
 use Mail;
 use Excel;
+use PDF;
+
+use Illuminate\Support\Facades\Storage;
 use App\Exports\OrdersExport;
+use App\Mail\RequestRx;
 
 class OrdersController extends Controller
 {
     public function store(Request $request)
     {
+       
+        ini_set('memory_limit', '-1');
         $user=Auth::user();
         $user->branch;
         if(!isset($user->branch->laboratory)){
@@ -38,6 +44,7 @@ class OrdersController extends Controller
         ));
         $purchase->save();
 
+        $client = Client::find($request->client_id);
         foreach ($request->cart as $key => $value) {
             $order = new Order(array(
                 "purchase_id"=>$purchase->id,
@@ -52,13 +59,47 @@ class OrdersController extends Controller
                 "laboratory_id"=>$user->branch->laboratory->id,
                 "branch_id"=>$user->branch->id,
                 "client_id"=>$request->client_id,
+
+                "rx_rx" => isset($value['rx_data']['rx_rx']) ? $value['rx_data']['rx_rx'] : null,
+                "rx_fecha" => isset($value['rx_data']['rx_fecha']) ? $value['rx_data']['rx_fecha'] : null,
+                "rx_cliente" => isset($value['rx_data']['rx_cliente']) ? $value['rx_data']['rx_cliente'] : null,
+
+                "rx_od_esfera" => isset($value['rx_data']['rx_od_esfera']) ? $value['rx_data']['rx_od_esfera'] : null,
+                "rx_od_cilindro" => isset($value['rx_data']['rx_od_cilindro']) ? $value['rx_data']['rx_od_cilindro'] : null,
+                "rx_od_eje" => isset($value['rx_data']['rx_od_eje']) ? $value['rx_data']['rx_od_eje'] : null,
+                "rx_od_adicion" => isset($value['rx_data']['rx_od_adicion']) ? $value['rx_data']['rx_od_adicion'] : null,
+                "rx_od_dip" => isset($value['rx_data']['rx_od_dip']) ? $value['rx_data']['rx_od_dip'] : null,
+                "rx_od_altura" => isset($value['rx_data']['rx_od_altura']) ? $value['rx_data']['rx_od_altura'] : null,
+                
+
+                "rx_od_esfera_dos" => isset($value['rx_data']['rx_od_esfera_dos']) ? $value['rx_data']['rx_od_esfera_dos'] : null,
+                "rx_od_cilindro_dos" => isset($value['rx_data']['rx_od_cilindro_dos']) ? $value['rx_data']['rx_od_cilindro_dos'] : null,
+                "rx_od_eje_dos" => isset($value['rx_data']['rx_od_eje_dos']) ? $value['rx_data']['rx_od_eje_dos'] : null,
+                "rx_od_adicion_dos" => isset($value['rx_data']['rx_od_adicion_dos']) ? $value['rx_data']['rx_od_adicion_dos'] : null,
+                "rx_od_dip_dos" => isset($value['rx_data']['rx_od_dip_dos']) ? $value['rx_data']['rx_od_dip_dos'] : null,
+                "rx_od_altura_dos" => isset($value['rx_data']['rx_od_altura_dos']) ? $value['rx_data']['rx_od_altura_dos'] : null,
+            
+                "rx_diseno" => isset($value['rx_data']['rx_diseno']) ? $value['rx_data']['rx_diseno'] : null,
+                "rx_material" => isset($value['rx_data']['rx_material']) ? $value['rx_data']['rx_material'] : null,
+                "rx_caracteristicas" => isset($value['rx_data']['rx_caracteristicas']) ? $value['rx_data']['rx_caracteristicas'] : null,
+                "rx_tipo_ar" => isset($value['rx_data']['rx_tipo_ar']) ? $value['rx_data']['rx_tipo_ar'] : null,
+                "rx_tallado" => isset($value['rx_data']['rx_tallado']) ? $value['rx_data']['rx_tallado'] : null,
+                "rx_servicios" => isset($value['rx_data']['rx_servicios']) ? $value['rx_data']['rx_servicios'] : null,
+
+                "rx_tipo_armazon" => isset($value['rx_data']['rx_tipo_armazon']) ? $value['rx_data']['rx_tipo_armazon'] : null,
+                "rx_horizontal_a" => isset($value['rx_data']['rx_horizontal_a']) ? $value['rx_data']['rx_horizontal_a'] : null,
+                "rx_vertical_b" => isset($value['rx_data']['rx_vertical_b']) ? $value['rx_data']['rx_vertical_b'] : null,
+                "rx_diagonal_ed" => isset($value['rx_data']['rx_diagonal_ed']) ? $value['rx_data']['rx_diagonal_ed'] : null,
+                "rx_puente" => isset($value['rx_data']['rx_puente']) ? $value['rx_data']['rx_puente'] : null,
+                "rx_observaciones" => isset($value['rx_data']['rx_observaciones']) ? $value['rx_data']['rx_observaciones'] : null,
+                
             ));
 
             $actualTotal = floatval($value['total']) - floatval($value['discount']);
 
             $order->iva = $this->_recalculateTax($actualTotal, $order->laboratory_id, $order->iva);
             $order->save();
-
+            
             if($value['extras']) {
                 foreach ($value['extras'] as $k => $v) {
                     OrderHasExtra::create(array(
@@ -76,7 +117,32 @@ class OrdersController extends Controller
                 $order->status = 'entregado';
                 $order->save();
             }
+
+            if ($value['rx_data']) {
+                $value['rx_data']['pvd'] = $user->branch->name;
+                $value['rx_data']['laboratory'] = $user->branch->Laboratory->name;
+
+                $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $value['rx_data']])->setPaper('A5');
+                $content = $pdf->download()->getOriginalContent();
+                 // Crear el archivo y almacenarlo en el storage
+                Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+                
+                
+                if ($client) {
+                    //Mail::to($client->email)->send(new RequestRx( $value['rx_data'],$content));
+                    Mail::to('sistemas@augenlabs.com')->send(new RequestRx($value['rx_data'],$content));
+                    //Mail::to('richardsustam23@gmail.com')->send(new RequestRx( $data,$content));
+                }
+            }
+
         }
+
+        if (isset($request->user['branch'])) {
+            $data['pvd'] = $request->user['branch']['name'];
+        }
+        
+        
+
 
         return response()->json(['msg'=>'Pedido generado correctamente!!']);
     }
@@ -1283,5 +1349,111 @@ class OrdersController extends Controller
         }
        
         return 'ok';// Excel::download(new OrdersExport($request->data), 'pedidos.xlsx');
+    }
+    
+    public function indexEntradasSalidas(Request $request)
+    {
+        ini_set('memory_limit',-1);
+        $start = $request->start;
+        $end = $request->end;
+       
+
+        $start = date("Y-m-d H:i:s", strtotime($start." 00:00:00"));
+        $end = date("Y-m-d H:i:s", strtotime($end." 23:59:59"));
+
+        $orders = Order::select('orders.*','clients.name as client_name','clients.comertial_name as comertial_name','branches.name as branch_name')
+								
+                    ->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+                    ->leftJoin('branches', 'orders.branch_id', '=', 'branches.id')
+                 
+                    ->where("orders.created_at", ">=" ,$start)
+                    ->where("orders.created_at", "<=", $end)
+                    ->orderBy('orders.created_at', 'desc')
+                    ->get();
+
+        foreach ($orders as $key => $value) {
+            $value->productHas;
+            $value->extras;
+            //$value->client;
+            //$value->branch;
+        }
+
+        foreach ($orders as $key => $value) {
+            $orders[$key] = $orders[$key]->toArray();
+            if(is_null($orders[$key]['client'])){
+                $orders[$key] = array_merge($orders[$key], ['client'=>['name'=> 'Cliente eliminado']]);
+            }
+        }
+        return response()->json($orders, 200, [], JSON_NUMERIC_CHECK);
+    }
+    public function requestRx($id)
+    {
+        $order = Order::find($id);
+        $branch = Branch::find($order->branch_id);
+        $order->pvd = $branch->name;
+        $order->laboratory = $branch->Laboratory->name;
+    
+        $order->date = date('d-m-Y');
+        if ($order && $branch) {
+
+            ini_set('memory_limit', '-1');
+
+            $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $order])->setPaper('A5');
+            $content = $pdf->download()->getOriginalContent();
+
+             // Crear el archivo y almacenarlo en el storage
+            Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+
+            //Mail::to('richardsustam23@gmail.com')->send(new ContractComplete( $order,$content));
+
+            $user = User::find($order->client_id);
+            if ($user) {
+                //Mail::to($user->email)->send(new ContractComplete( $inputs,$content));
+            }
+        }
+        return 'https://dev.augenlabs.com/storage/app/public/docs/order-'.$order->id.'.pdf';
+    }
+    public function requestRxSave(Request $request)
+    {
+        
+
+        $data = $request->rx;
+        
+        if (isset($request->user['branch'])) {
+            $data['pdv'] = $request->user['branch']['name'];
+        }
+        
+        if ($data) {
+            
+            ini_set('memory_limit', '-1');
+
+            $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
+            $content = $pdf->download()->getOriginalContent();
+
+             // Crear el archivo y almacenarlo en el storage
+            Storage::disk('public')->put('docs/order-aaaa.pdf',$content);
+
+            
+
+           
+            if (isset($request->user['email'])) {
+                Mail::to($request->user['email'])->send(new RequestRx( $data,$content));
+                //Mail::to('richardsustam23@gmail.com')->send(new RequestRx( $data,$content));
+            }
+        }
+        return 'ok';
+    }
+
+    public function getOrdersOpcs($id)
+    {
+        $orders = Order::where('client_id',$id)->where('status','entregado')->get();
+        foreach ($orders as $key => $value) {
+            $value->total_custom = '$ '.number_format($value->total,2);
+            $value->rxBtn = '<button class="btn btn-secondary"><i class="fas fa-eye"></i> </button>';
+            $value->branch->laboratory;
+            $value->productHas;
+            
+        }
+        return response()->json($orders);
     }
 }

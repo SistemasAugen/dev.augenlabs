@@ -19,9 +19,10 @@
 						<div class="col-md-12">
 							<div class="tabs-vertical-env">
 								<ul class="nav tabs-vertical">
-									<li class="active"><a href="#v-data" data-toggle="tab" aria-expanded="true">Datos</a></li>
-									<li class=""><a href="#v-discounts" data-toggle="tab" aria-expanded="false">Condiciones comerciales</a></li>
-									<li class=""><a href="#v-facturacion" data-toggle="tab" aria-expanded="false">Facturacion</a></li>
+									<li :class="active1"><a @click="(active = 1)" href="#v-data" data-toggle="tab" aria-expanded="true">Datos</a></li>
+									<li :class="active2"><a @click="(active = 2)" href="#v-discounts" data-toggle="tab" aria-expanded="false">Condiciones comerciales</a></li>
+									<li :class="active3"><a @click="(active = 3)" href="#v-facturacion" data-toggle="tab" aria-expanded="false">Facturacion</a></li>
+									<li :class="active4"><a @click="(active = 4)" href="#v-accesos" data-toggle="tab" aria-expanded="false">Datos de acceso</a></li>
 								</ul>
 								<div class="tab-content">
 									<div class="tab-pane active" id="v-data">
@@ -92,15 +93,43 @@
 										</table>
 									</div>
 									<div class="tab-pane" id="v-facturacion">
+										<p style="text-align: center;"><b>Direccíon 1</b></p>
+										<input-form name="business_name_one" text="Razon social" :data.sync="client.facturacion.business_name_one"></input-form>
+										<input-form name="rfc_one" text="RFC" :data.sync="client.facturacion.rfc_one"></input-form>
+										<input-form name="tax_regime_one" text="Regimen fiscal" :data.sync="client.facturacion.tax_regime_one"></input-form>
+										<input-form name="zipcode_one" text="CP" :data.sync="client.facturacion.zipcode_one"></input-form>
+										<input-form name="addres_one" text="Direccion/Ciudad" :data.sync="client.facturacion.addres_one"></input-form>
+										<input-form name="tez_one" text="TEZ" :data.sync="client.facturacion.tez_one"></input-form>
+										<input-form name="email_one" text="Correo" :data.sync="client.facturacion.email_one"></input-form>
+
+										<p style="text-align: center;"><b>Direccíon 2</b></p>
+										<input-form name="business_name_two" text="Razon social" :data.sync="client.facturacion.business_name_two"></input-form>
+										<input-form name="rfc_two" text="RFC" :data.sync="client.facturacion.rfc_two"></input-form>
+										<input-form name="tax_regime_two" text="Regimen fiscal" :data.sync="client.facturacion.tax_regime_two"></input-form>
+										<input-form name="zipcode_two" text="CP" :data.sync="client.facturacion.zipcode_two"></input-form>
+										<input-form name="addres_two" text="Direccion/Ciudad" :data.sync="client.facturacion.addres_two"></input-form>
+										<input-form name="tez_two" text="TEZ" :data.sync="client.facturacion.tez_two"></input-form>
+										<input-form name="email_two" text="Correo" :data.sync="client.facturacion.email_two"></input-form>
+
+										<p style="text-align: center;"><b>Direccíon 2</b></p>
+										<input-form name="business_name_three" text="Razon social" :data.sync="client.facturacion.business_name_three"></input-form>
+										<input-form name="rfc_three" text="RFC" :data.sync="client.facturacion.rfc_three"></input-form>
+										<input-form name="tax_regime_three" text="Regimen fiscal" :data.sync="client.facturacion.tax_regime_three"></input-form>
+										<input-form name="zipcode_three" text="CP" :data.sync="client.facturacion.zipcode_three"></input-form>
+										<input-form name="addres_three" text="Direccion/Ciudad" :data.sync="client.facturacion.addres_three"></input-form>
+										<input-form name="tez_three" text="TEZ" :data.sync="client.facturacion.tez_three"></input-form>
+										<input-form name="email_three" text="Correo" :data.sync="client.facturacion.email_three"></input-form>
+										
+										<!--
 										<input-form name="nombre" text="Nombre" :data.sync="client.facturacion.name"></input-form>
 										<input-form name="telefono" text="Telefono" :data.sync="client.facturacion.phone"></input-form>
                                         <input-form name="celular" text="Celular" :data.sync="client.facturacion.celphone"></input-form>
-										<!-- <input-form name="RFC" text="R.F.C." :data.sync="client.facturacion.rfc"></input-form> -->
+										<!*-- <input-form name="RFC" text="R.F.C." :data.sync="client.facturacion.rfc"></input-form> --*>
 										<div class="form-group">
 											<label for="field-1" class="col-sm-3 control-label">R.F.C:</label>
 											<div class="col-sm-7">
 												<input type="text" class="form-control" name="RFC" v-model="client.facturacion.rfc" @change="checkClient($event)">
-												<!-- <small class="has-error" >{{ errors.first(name) }}</small> -->
+												<*!-- <small class="has-error" >{{ errors.first(name) }}</small> --*>
 											</div>
 										</div>
 										<input-form name="direccion" text="Direccion" :data.sync="client.facturacion.address"></input-form>
@@ -108,7 +137,25 @@
 										<select-form text="Estado" name="state" :options="states" :data.sync="client.facturacion.state"></select-form>
                                         <select-form text="Ciudad" name="town" :options="towns_facturacion" :data.sync="client.facturacion.town"></select-form>
 										<input-form name="codigo_postal" text="Codigo postal" :data.sync="client.facturacion.postal_code"></input-form>
+									-->
 									</div>
+									<div class="tab-pane" id="v-accesos">
+										<!-- <input-form name="email" text="Email" :data.sync="client.email" disabled></input-form> -->
+										<div class="form-group">
+										<label class="col-sm-3 control-label">Email:</label>
+											<div class="col-sm-7">
+												<input type="email" :data.sync="client.email" readonly disabled v-model="client.email" class="form-control" id="emailcustomer" autocomplete="off">
+											</div>
+										</div>
+
+										<label class="col-sm-3 control-label">Password:</label>
+											<div class="col-sm-7">
+												<input type="password" :data.sync="client.password" v-model="client.password" class="form-control" id="emailcustomer" autocomplete="off" :validate="rule_password" placeholder="Solo si desea cambiarla">
+											</div>
+
+						
+									</div>
+									
 								</div>
 							</div>
 						</div>
@@ -166,6 +213,7 @@
 					},
 					category: 'DOCTORES',
 					reason: null,
+					password:"",
 				},
 				discountGeneral:0,
 				states:[],
@@ -176,7 +224,30 @@
 				statusOp:["Activo", "Inactivo"],
 				id:"",
 				check:false,
+				active:1,
 			}
+		},
+		computed:{
+            active1: function(){
+                return (this.active == 1) ? 'active' : '';
+            },
+            active2: function(){
+                return (this.active == 2) ? 'active' : '';
+            },
+			active3: function(){
+                return (this.active == 3) ? 'active' : '';
+            },
+			active4: function(){
+                return (this.active == 4) ? 'active' : '';
+            },
+			rule_password:function(){
+				if(this.client.password==undefined || this.client.password.length==0){
+					return '';
+				}
+				else{
+					return 'min:5|required';
+				}
+			},
 		},
         watch:{
             'client.state.value':{

@@ -23,7 +23,6 @@
                     <label class="control-label col-sm-2">Periodo:</label>
                     <div class="col-sm-10">
                         <input class="form-control" v-model="selectedPeriod" type="month" @change="refreshData" min="2021-08" :max="actualMonth">
-                        </input>
                     </div>
                 </div>
             </div>
@@ -127,11 +126,13 @@ export default {
                 this.$parent.inPetition = true;
                 let period = this.selectedPeriod;
                 axios.post(`/api/branches/${ this.selectedBranch.id }/profitability`, { period }).then(result => {
-                    this.fillData(result.data.data);
                     this.$parent.inPetition = false;
+                    this.fillData(result.data.data);
+                    
                 });
             } else {
                 alert('Selecciona un PDV primero');
+                this.$parent.inPetition = false;
             }
         },
         fillData(data) {

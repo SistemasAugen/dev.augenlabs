@@ -18,7 +18,7 @@ import Autocomplete from 'vue2-autocomplete-js'
 import ToggleButton from 'vue-js-toggle-button'
 import SweetModal from 'sweet-modal-vue/src/plugin.js';
 
-import 'vue2-autocomplete-js/dist/style/vue2-autocomplete.css';
+//import 'vue2-autocomplete-js/dist/style/vue2-autocomplete.css';
 
 //Funcion para añadirlas a Vue
 function fire(Vue){

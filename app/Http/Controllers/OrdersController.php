@@ -129,9 +129,9 @@ class OrdersController extends Controller
                 
                 
                 if ($client) {
-                    //Mail::to($client->email)->send(new RequestRx( $value['rx_data'],$content));
-                    Mail::to('sistemas@augenlabs.com')->send(new RequestRx($value['rx_data'],$content));
-                    //Mail::to('richardsustam23@gmail.com')->send(new RequestRx( $data,$content));
+                    if($value['rx_data']['have_data']) {
+                        Mail::to('sistemas@augenlabs.com')->send(new RequestRx($value['rx_data'],$content));
+                    }
                 }
             }
 
@@ -1404,8 +1404,6 @@ class OrdersController extends Controller
              // Crear el archivo y almacenarlo en el storage
             Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
 
-            //Mail::to('richardsustam23@gmail.com')->send(new ContractComplete( $order,$content));
-
             $user = User::find($order->client_id);
             if ($user) {
                 //Mail::to($user->email)->send(new ContractComplete( $inputs,$content));
@@ -1437,8 +1435,9 @@ class OrdersController extends Controller
 
            
             if (isset($request->user['email'])) {
-                Mail::to($request->user['email'])->send(new RequestRx( $data,$content));
-                //Mail::to('richardsustam23@gmail.com')->send(new RequestRx( $data,$content));
+                if($data['rx_rx'] !== '') {
+                    Mail::to($request->user['email'])->send(new RequestRx( $data,$content));
+                }
             }
         }
         return 'ok';

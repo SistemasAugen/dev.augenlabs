@@ -28,6 +28,7 @@ class AppController extends Controller {
         try {
             $credentials = $request->all();
             $client = Client::where('email', $credentials['email'])
+                            ->orWhere('id', $credentials['email'])
                             ->first();
 
             if(is_null($client))

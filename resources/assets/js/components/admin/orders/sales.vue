@@ -138,6 +138,7 @@
                         <th>Total</th>
                         <th>Status</th>
                         <th>Observaciones</th>
+                        <th>RX</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -168,6 +169,9 @@
                         <td>{{ cart.status.charAt(0).toUpperCase() + cart.status.replace('_', ' ').slice(1) }}</td>
                         <td v-if="cart.purchase.description != null">{{ cart.purchase.description }}</td>
                         <td v-else>{{ 'N/A' }}</td>
+                        <td><button v-if="cart.have_data" class="btn btn-success" @click="showNote(i)">RX</button>
+                            <button v-else class="btn btn-info" >RX</button>
+                        </td>
                     </tr>
                 </tbody>
                 <tfoot>

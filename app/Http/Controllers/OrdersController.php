@@ -387,6 +387,32 @@ class OrdersController extends Controller
             $value->productHas;
             $value->extras;
             $value->purchase;
+            $value->branch;
+            $value->branch->laboratory;
+
+            $checkform = false;
+                if ($value->rx_diagonal_ed != null && $value->rx_diagonal_ed != '') {$checkform = true;}
+                if ($value->rx_horizontal_a != null && $value->rx_horizontal_a != '') {$checkform = true;}
+                if ($value->rx_observaciones != null && $value->rx_observaciones  != '') {$checkform = true;}
+                if ($value->rx_od_adicion != null && $value->rx_od_adicion != '') {$checkform = true;}
+                if ($value->rx_od_adicion_dos != null && $value->rx_od_adicion_dos != '') {$checkform = true;}
+                if ($value->rx_od_altura != null && $value->rx_od_altura != '') {$checkform = true;}
+                if ($value->rx_od_altura_dos != null && $value->rx_od_altura_dos != '') {$checkform = true;}
+                if ($value->rx_od_cilindro != null && $value->rx_od_cilindro != '') {$checkform = true;}
+                if ($value->rx_od_cilindro_dos != null &&  $value->rx_od_cilindro_dos != '') {$checkform = true;}
+                if ($value->rx_od_dip != null && $value->rx_od_dip != '') {$checkform = true;}
+                if ($value->rx_od_dip_dos != null && $value->rx_od_dip_dos != '') {$checkform = true;}
+                if ($value->rx_od_eje != null && $value->rx_od_eje != '') {$checkform = true;}
+                if ($value->rx_od_eje_dos != null && $value->rx_od_eje_dos != '') {$checkform = true;}
+                if ($value->rx_od_esfera != null && $value->rx_od_esfera != '') {$checkform = true;}
+                if ($value->rx_od_esfera_dos != null && $value->rx_od_esfera_dos != '') {$checkform = true;}
+                if ($value->rx_puente != null && $value->rx_puente != '') {$checkform = true;}
+                if ($value->rx_servicios != null && $value->rx_servicios != '') {$checkform = true;}
+                if ($value->rx_tallado != null && $value->rx_tallado != '') {$checkform = true;}
+                if ($value->rx_tipo_ar != null && $value->rx_tipo_ar != '') {$checkform = true;}
+                if ($value->rx_tipo_armazon != null && $value->rx_tipo_armazon != '') {$checkform = true;}
+                if ($value->rx_vertical_b != null && $value->rx_vertical_b != '') {$checkform = true;}
+                $value->have_data = $checkform;
         }
         return response()->json($orders);
     }

@@ -295,7 +295,7 @@ class NoteController extends Controller
         
         foreach ($emailsdata as $key => $value) {
            
-            Mail::to($value)->send(new SendEmailNote( $data));
+            Mail::to(trim($value))->send(new SendEmailNote( $data));
             
         }       
         //Mail::to('sistemas@augenlabs.com')->send(new SendEmailNote( $data));

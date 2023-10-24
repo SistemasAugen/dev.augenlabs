@@ -28,6 +28,9 @@
 						    </template>                       
 					    </v-select>
 					</div>
+					<div class="col-sm-2">
+						<button class="btn btn-info" @click="toggleAll(!hideAll)">{{ hideAll ? 'Mostrar' : 'Ocultar' }} todos los importes</button>
+					</div>
 				</div> 
 
 				<table id="rowstable" data-pagination="false"></table>
@@ -70,14 +73,29 @@
 									<td>{{rx.rx_fecha}}</td>
 									<td>{{rx.rx}}</td>
 									<td>{{rx.description}}</td>
-									<td>$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(rx.total) }}</td>
+									<td v-if="rx.status != 'garantia'">$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rx.total) }}</td>
+									<td v-else><b>-$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rx.total) }}</b></td>
 								</tr>
 
+								<!-- <tr >
+									
+									<td colspan="2" style="border:none;text-align: left;">
+										<button class="btn btn-info" @click="showAllRx = !showAllRx">Mostrar/Ocultar importes ocultos</button>
+									</td>
+									<p style="padding-top: 10px;text-align: right;" v-if="form.rxs.length > 0"><b>Subtotal: $</b></p>
+									<th style="border-radius: 20px 20px 20px 20px" v-if="form.rxs.length > 0">$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(form.subtotal) }}</th>
+								</tr> -->
+								<!-- <tr >
+									
+									<td colspan="2" style="border:none;text-align: left;"></td>
+									<p style="padding-top: 10px;text-align: right;" v-if="form.rxs.length > 0"><b>IVA <small v-if="isFrontier">8%</small><small v-else>16%</small>: $</b></p>
+									<th style="border-radius: 20px 20px 20px 20px" v-if="form.rxs.length > 0">$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(form.tax) }}</th>
+								</tr> -->
 								<tr >
 									
 									<td colspan="2" style="border:none;text-align: left;"></td>
 									<p style="padding-top: 10px;text-align: right;" v-if="form.rxs.length > 0"><b>Total: $</b></p>
-									<th style="border-radius: 20px 20px 20px 20px" v-if="form.rxs.length > 0">$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(form.total) }}</th>
+									<th style="border-radius: 20px 20px 20px 20px" v-if="form.rxs.length > 0">$  {{ Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(form.total) }}</th>
 								</tr>
 							</table>
 
@@ -353,6 +371,9 @@
 					{value:'Plástico',label:'Plástico'},
 					{value:'Ranurado',label:'Ranurado'},
 				],
+				isFrontier: null,
+				showAllRx: false,
+				hideAll: false
 			}
 		},
 		methods:{
@@ -367,7 +388,7 @@
 						{
 					        field: 'finish_date',
 					        title: 'Fecha',
-					        sortable:false,
+					        sortable:true,
 							switchable:false,
 							
 					    },
@@ -421,6 +442,12 @@
 							switchable:false,
 							
 					    },
+						{
+					        field: 'actions',
+					        title: 'Acciones',
+					        sortable:false,
+							switchable:false,
+					    }
 						
 					],
 					//Boton de refrescar
@@ -433,10 +460,50 @@
 				});
 
 				jQuery('#rowstable').on('click-row.bs.table',(e,row,data,$element)=>{
-					
 					if ($element == 'rxBtn') {
 						this.indx_show = data[0]['sectionRowIndex'];
 						this.$refs.showRxModal.open();
+					}
+
+					if($element == 'actions') {
+						const $button = data.find('.btn-discount');
+						const $priceTd = data.children('td').eq(7);
+						const realTotal = $button.data('total');
+
+						this.$parent.inPetition=true;
+						const idx = data[0]['sectionRowIndex'];
+						if($button.hasClass('btn-danger')) {
+							// enable discount
+							this.orders[idx].total = '0.00';
+							this.orders[idx].subtotal = '0.00';
+							$button.removeClass('btn-danger');
+							$button.addClass('btn-success');
+
+							$priceTd.html('<b>$ 0.00</b>');
+							this.$parent.showMessage('Importe oculto');
+						} else {
+							// remove discount
+							this.orders[idx].total = realTotal;
+							this.orders[idx].subtotal = realTotal;
+							$button.removeClass('btn-success');
+							$button.addClass('btn-danger');
+
+							let number = parseFloat(realTotal);
+							if(this.orders[idx].status == 'garantia')
+								number = -number;
+
+							const formattedCurrency = number.toLocaleString('en-US', {
+								style: 'currency',
+								currency: 'USD' // Change the currency code as needed
+							});
+
+							$priceTd.html(formattedCurrency);
+						}
+
+						// jQuery('#rowstable').bootstrapTable('removeAll');
+			    		// jQuery('#rowstable').bootstrapTable('append',this.orders);
+
+						this.$parent.inPetition=false;
 					}
 				});
 
@@ -523,13 +590,14 @@
 				
 				for (let x = 0; x < this.customersOpcs.length; x++) {
 					if(this.customersOpcs[x]['id'] == this.customers_id){
-						customer_name = this.customersOpcs[x]['name'];
+						customer_name = this.customersOpcs[x]['comertial_name'];
 					}
 				}
 				this.form.customer_name = customer_name;
 				this.$parent.inPetition=true;
                 axios.get(tools.url('api/ordersnotes/'+this.customers_id)).then((res)=>{
                     this.orders = res.data;
+					this.hideAll = false;
 					jQuery('#rowstable').bootstrapTable('removeAll');
 			    	jQuery('#rowstable').bootstrapTable('append',this.orders);
 
@@ -557,20 +625,93 @@
 						'rx_tipo_ar':row.rx_tipo_ar,
 						'total_custom':row.total_custom,
 						'total':row.total,
-						'description':row.product.name+', '+row.product.subcategory_name+', '+row.product.type_name+', '+row.rx_tipo_ar,
+						'description': [ row.product.name, row.product.subcategory_name, row.product.type_name, row.rx_tipo_ar].filter(c => c != null).join(', '),
+						'status': row.status,
+						'subtotal': row.subtotal
 					};
 					return aux;
 				});
 				var total = 0;
 				for (let z = 0; z < rxs.length; z++) {
-					total = total + parseFloat(rxs[z]['total']);
-					
+					if(rxs[z]['status'] != 'garantia') {
+						total = total + parseFloat(rxs[z]['total']);
+					}
 				}
+
 				this.form.total = total;
 				this.form.customers_id = this.customers_id;
 				this.form.rxs = rxs;
 				this.$refs.modalrxs.open();
+				/*
+				const customer = this.customersOpcs.filter(item => item.id == this.customers_id).shift();
+				const frontierLaboratories = [2, 10];
+				axios.get('/api/branch/' + customer.branch_id).then(result => {
+					const laboratoryId = result.data.laboratory_id;
+					if(frontierLaboratories.includes(laboratoryId)) {
+						// it's frontier 8% of tax
+						this.form.subtotal = this.form.total / 1.08;
+						this.form.tax = this.form.total - this.form.subtotal;
+						// this.form.tax = this.form.subtotal * 0.08;
+						this.isFrontier = true;
+					} else {
+						// not frontier 16% of tax
+						this.form.total = total;
+						this.form.subtotal = this.form.total / 1.16;
+						this.form.tax = this.form.total - this.form.subtotal;
+						this.isFrontier = false;
+					}
+
+					//this.form.total = this.form.subtotal + this.form.tax;
+					this.form.customers_id = this.customers_id;
+					this.form.rxs = rxs;
+					this.$refs.modalrxs.open();
+				});*/
 			},
+			toggleAll(status) {
+				this.hideAll = status;
+				
+				this.$parent.inPetition=true;
+				$('#rowstable tbody tr').map((index, element) => {
+					const data = $(element);
+					const $button = data.find('.btn-discount');
+						const $priceTd = data.children('td').eq(7);
+						const realTotal = $button.data('total');
+
+						const idx = data[0]['sectionRowIndex'];
+						if($button.hasClass('btn-danger')) {
+							// enable discount
+							this.orders[index].total = '0.00';
+							this.orders[index].subtotal = '0.00';
+							$button.removeClass('btn-danger');
+							$button.addClass('btn-success');
+
+							$priceTd.html('<b>$ 0.00</b>');
+							this.$parent.showMessage('Importe oculto');
+						} else {
+							// remove discount
+							this.orders[index].total = realTotal;
+							this.orders[index].subtotal = realTotal / 1.16;
+							$button.removeClass('btn-success');
+							$button.addClass('btn-danger');
+
+							let number = parseFloat(realTotal);
+							if(this.orders[index].status == 'garantia')
+								number = -number;
+
+							const formattedCurrency = number.toLocaleString('en-US', {
+								style: 'currency',
+								currency: 'USD' // Change the currency code as needed
+							});
+
+							$priceTd.html(formattedCurrency);
+						}
+
+						// jQuery('#rowstable').bootstrapTable('removeAll');
+			    		// jQuery('#rowstable').bootstrapTable('append',this.orders);
+
+					});
+					this.$parent.inPetition=false;
+			}
 			/*newRowNote(form){
 				this.$parent.inPetition=true;
 				this.$parent.validateAll(()=>{

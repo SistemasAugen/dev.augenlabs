@@ -23,6 +23,7 @@ use PDF;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\OrdersExport;
 use App\Mail\RequestRx;
+use Carbon\Carbon;
 
 class OrdersController extends Controller
 {
@@ -56,7 +57,7 @@ class OrdersController extends Controller
                 "total"=>$value['total'],
                 "iva"=>$value['iva'],
                 "rx"=>$value['rx'],
-                "laboratory_id"=>$user->branch->laboratory->id,
+                "laboratory_id"=> isset($value['laboratory_id']) ? $value['laboratory_id'] : $user->branch->laboratory->id,
                 "branch_id"=>$user->branch->id,
                 "client_id"=>$request->client_id,
 
@@ -127,10 +128,25 @@ class OrdersController extends Controller
                  // Crear el archivo y almacenarlo en el storage
                 Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
                 
+                $mapLabs = [
+                    1 => 'americas',
+                    2 => 'ens',
+                    3 => 'chap',
+                    4 => 'mty',
+                    5 => 'pue',
+                    6 => 'slp'
+                ];
                 
                 if ($client) {
                     if($value['rx_data']['have_data']) {
-                        Mail::to('sistemas@augenlabs.com')->send(new RequestRx($value['rx_data'],$content));
+                        if(in_array($value['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
+                            $cc = 'captura' . $mapLabs[$value['laboratory_id']] . '@augenlabs.com';
+                            Mail::to($user->email)
+                            ->cc($cc)
+                            ->send(new RequestRx($value['rx_data'],$content));
+                        } else {
+                            Mail::to($user->email)->send(new RequestRx($value['rx_data'],$content));
+                        }
                     }
                 }
             }
@@ -172,15 +188,46 @@ class OrdersController extends Controller
         foreach ($orders as $key => $value) {
             $value->productHas;
             $value->extras;
+            $value->branch;
+            $value->branch->laboratory;
 
             if(is_null($orders[$key]->client)) {
                 $orders[$key]->client = ['name'=> 'Cliente eliminado'];
+            }
+
+            if(is_null($orders[$key]->branch)) {
+                $orders[$key]->branch = ['name'=> 'PDV Eliminado'];
             }
 
             if(isset($orders[$key]->promo_discount))
                 $orders[$key]->total_real = $orders[$key]->promo_discount;//number_format(floatval($orders[$key]->total)  - floatval($orders[$key]->discount) - floatval($orders[$key]->discount_admin) + floatval($orders[$key]->iva), 2);
             else
                 $orders[$key]->total_real = number_format(floatval($orders[$key]->total)  - floatval($orders[$key]->discount) - floatval($orders[$key]->discount_admin) + floatval($orders[$key]->iva), 2);
+        
+            
+            $checkform = false;
+            if ($value->rx_diagonal_ed != null && $value->rx_diagonal_ed != '') {$checkform = true;}
+            if ($value->rx_horizontal_a != null && $value->rx_horizontal_a != '') {$checkform = true;}
+            if ($value->rx_observaciones != null && $value->rx_observaciones  != '') {$checkform = true;}
+            if ($value->rx_od_adicion != null && $value->rx_od_adicion != '') {$checkform = true;}
+            if ($value->rx_od_adicion_dos != null && $value->rx_od_adicion_dos != '') {$checkform = true;}
+            if ($value->rx_od_altura != null && $value->rx_od_altura != '') {$checkform = true;}
+            if ($value->rx_od_altura_dos != null && $value->rx_od_altura_dos != '') {$checkform = true;}
+            if ($value->rx_od_cilindro != null && $value->rx_od_cilindro != '') {$checkform = true;}
+            if ($value->rx_od_cilindro_dos != null &&  $value->rx_od_cilindro_dos != '') {$checkform = true;}
+            if ($value->rx_od_dip != null && $value->rx_od_dip != '') {$checkform = true;}
+            if ($value->rx_od_dip_dos != null && $value->rx_od_dip_dos != '') {$checkform = true;}
+            if ($value->rx_od_eje != null && $value->rx_od_eje != '') {$checkform = true;}
+            if ($value->rx_od_eje_dos != null && $value->rx_od_eje_dos != '') {$checkform = true;}
+            if ($value->rx_od_esfera != null && $value->rx_od_esfera != '') {$checkform = true;}
+            if ($value->rx_od_esfera_dos != null && $value->rx_od_esfera_dos != '') {$checkform = true;}
+            if ($value->rx_puente != null && $value->rx_puente != '') {$checkform = true;}
+            if ($value->rx_servicios != null && $value->rx_servicios != '') {$checkform = true;}
+            if ($value->rx_tallado != null && $value->rx_tallado != '') {$checkform = true;}
+            if ($value->rx_tipo_ar != null && $value->rx_tipo_ar != '') {$checkform = true;}
+            if ($value->rx_tipo_armazon != null && $value->rx_tipo_armazon != '') {$checkform = true;}
+            if ($value->rx_vertical_b != null && $value->rx_vertical_b != '') {$checkform = true;}
+            $orders[$key]->have_data = $checkform;
         }
 
         return response()->json($orders, 200, [], JSON_NUMERIC_CHECK);
@@ -299,6 +346,10 @@ class OrdersController extends Controller
             if(is_null($orders[$key]['client'])){
                 $orders[$key] = array_merge($orders[$key], ['client'=>['name'=> 'Cliente eliminado']]);
             }
+
+            if(is_null($orders[$key]['branch'])) {
+                $orders[$key] = array_merge($orders[$key], ['branch'=>['name'=> 'PDV Eliminado']]);
+            }
         }
 
         // dd($orders[0]);
@@ -349,6 +400,10 @@ class OrdersController extends Controller
             $orders[$key] = $orders[$key]->toArray();
             if(is_null($orders[$key]['client'])){
                 $orders[$key] = array_merge($orders[$key], ['client'=>['name'=> 'Cliente eliminado']]);
+            }
+
+            if(is_null($orders[$key]['branch'])) {
+                $orders[$key] = array_merge($orders[$key], ['branch'=>['name'=> 'PDV Eliminado']]);
             }
         }
         return response()->json($orders, 200, [], JSON_NUMERIC_CHECK);
@@ -523,11 +578,61 @@ class OrdersController extends Controller
 
     public function changeLaboratory(Request $request,$id)
     {
-        $order=Order::find($id);
+        $order = Order::find($id);
+        $branch = Branch::find($order->branch_id);
+        
         OrdersMove::create(array(
             "from"=> $order->laboratory_id,
             "to"=> $request->laboratory_id
         ));
+
+        $checkform = false;
+        if ($order->rx_diagonal_ed != null && $order->rx_diagonal_ed != '') {$checkform = true;}
+        if ($order->rx_horizontal_a != null && $order->rx_horizontal_a != '') {$checkform = true;}
+        if ($order->rx_observaciones != null && $order->rx_observaciones  != '') {$checkform = true;}
+        if ($order->rx_od_adicion != null && $order->rx_od_adicion != '') {$checkform = true;}
+        if ($order->rx_od_adicion_dos != null && $order->rx_od_adicion_dos != '') {$checkform = true;}
+        if ($order->rx_od_altura != null && $order->rx_od_altura != '') {$checkform = true;}
+        if ($order->rx_od_altura_dos != null && $order->rx_od_altura_dos != '') {$checkform = true;}
+        if ($order->rx_od_cilindro != null && $order->rx_od_cilindro != '') {$checkform = true;}
+        if ($order->rx_od_cilindro_dos != null &&  $order->rx_od_cilindro_dos != '') {$checkform = true;}
+        if ($order->rx_od_dip != null && $order->rx_od_dip != '') {$checkform = true;}
+        if ($order->rx_od_dip_dos != null && $order->rx_od_dip_dos != '') {$checkform = true;}
+        if ($order->rx_od_eje != null && $order->rx_od_eje != '') {$checkform = true;}
+        if ($order->rx_od_eje_dos != null && $order->rx_od_eje_dos != '') {$checkform = true;}
+        if ($order->rx_od_esfera != null && $order->rx_od_esfera != '') {$checkform = true;}
+        if ($order->rx_od_esfera_dos != null && $order->rx_od_esfera_dos != '') {$checkform = true;}
+        if ($order->rx_puente != null && $order->rx_puente != '') {$checkform = true;}
+        if ($order->rx_servicios != null && $order->rx_servicios != '') {$checkform = true;}
+        if ($order->rx_tallado != null && $order->rx_tallado != '') {$checkform = true;}
+        if ($order->rx_tipo_ar != null && $order->rx_tipo_ar != '') {$checkform = true;}
+        if ($order->rx_tipo_armazon != null && $order->rx_tipo_armazon != '') {$checkform = true;}
+        if ($order->rx_vertical_b != null && $order->rx_vertical_b != '') {$checkform = true;}
+
+        if($checkform) {
+            $laboratoryId = $request->laboratory_id;
+            $data = $order->toArray();
+            $data['pvd'] = $branch->name;
+            $data['laboratory'] = $branch->laboratory->name;
+            $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
+            $content = $pdf->download()->getOriginalContent();
+            Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+
+            $mapLabs = [
+                1 => 'americas',
+                2 => 'ens',
+                3 => 'chap',
+                4 => 'mty',
+                5 => 'pue',
+                6 => 'slp'
+            ];
+    
+            if(in_array($laboratoryId, [1, 2, 3, 4, 5, 6])) {
+                $mailTo = 'captura' . $mapLabs[$laboratoryId] . '@augenlabs.com';
+                Mail::to($mailTo)
+                    ->send(new RequestRx($data,$content));
+            }
+        }
 
         $order->laboratory_id=$request->laboratory_id;
         $order->save();
@@ -1346,11 +1451,96 @@ class OrdersController extends Controller
 
     public function changeStatusWarranty($id, Request $request) {
         $order = Order::findOrFail($id);
+        $branch = Branch::find($order->branch_id);
         $order->status = 'garantia';
         $order->warranty_date = date('Y-m-d H:i:s');
 
-        $order->save();
+        $checkform = false;
+        if ($order->rx_diagonal_ed != null && $order->rx_diagonal_ed != '') {$checkform = true;}
+        if ($order->rx_horizontal_a != null && $order->rx_horizontal_a != '') {$checkform = true;}
+        if ($order->rx_observaciones != null && $order->rx_observaciones  != '') {$checkform = true;}
+        if ($order->rx_od_adicion != null && $order->rx_od_adicion != '') {$checkform = true;}
+        if ($order->rx_od_adicion_dos != null && $order->rx_od_adicion_dos != '') {$checkform = true;}
+        if ($order->rx_od_altura != null && $order->rx_od_altura != '') {$checkform = true;}
+        if ($order->rx_od_altura_dos != null && $order->rx_od_altura_dos != '') {$checkform = true;}
+        if ($order->rx_od_cilindro != null && $order->rx_od_cilindro != '') {$checkform = true;}
+        if ($order->rx_od_cilindro_dos != null &&  $order->rx_od_cilindro_dos != '') {$checkform = true;}
+        if ($order->rx_od_dip != null && $order->rx_od_dip != '') {$checkform = true;}
+        if ($order->rx_od_dip_dos != null && $order->rx_od_dip_dos != '') {$checkform = true;}
+        if ($order->rx_od_eje != null && $order->rx_od_eje != '') {$checkform = true;}
+        if ($order->rx_od_eje_dos != null && $order->rx_od_eje_dos != '') {$checkform = true;}
+        if ($order->rx_od_esfera != null && $order->rx_od_esfera != '') {$checkform = true;}
+        if ($order->rx_od_esfera_dos != null && $order->rx_od_esfera_dos != '') {$checkform = true;}
+        if ($order->rx_puente != null && $order->rx_puente != '') {$checkform = true;}
+        if ($order->rx_servicios != null && $order->rx_servicios != '') {$checkform = true;}
+        if ($order->rx_tallado != null && $order->rx_tallado != '') {$checkform = true;}
+        if ($order->rx_tipo_ar != null && $order->rx_tipo_ar != '') {$checkform = true;}
+        if ($order->rx_tipo_armazon != null && $order->rx_tipo_armazon != '') {$checkform = true;}
+        if ($order->rx_vertical_b != null && $order->rx_vertical_b != '') {$checkform = true;}
+        
+        if($checkform) {
+            $orderData = $request->input('order');
 
+            $rxFields = [
+                'rx_rx',
+                'rx_fecha',
+                'rx_cliente',
+                'rx_od_esfera',
+                'rx_od_cilindro',
+                'rx_od_eje',
+                'rx_od_adicion',
+                'rx_od_dip',
+                'rx_od_altura',
+                'rx_od_esfera_dos',
+                'rx_od_cilindro_dos',
+                'rx_od_eje_dos',
+                'rx_od_adicion_dos',
+                'rx_od_dip_dos',
+                'rx_od_altura_dos',
+                'rx_diseno',
+                'rx_material',
+                'rx_caracteristicas',
+                'rx_tipo_ar',
+                'rx_tallado',
+                'rx_servicios',
+                'rx_tipo_armazon',
+                'rx_horizontal_a',
+                'rx_vertical_b',
+                'rx_diagonal_ed',
+                'rx_puente',
+                'rx_observaciones',
+            ];
+            foreach($rxFields as $attr) {
+                $order->{$attr} = $orderData[$attr];
+            }
+            $data = $order->toArray();
+            $data['pvd'] = $branch->name;
+            $data['laboratory'] = $branch->Laboratory->name;
+            $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
+            $content = $pdf->download()->getOriginalContent();
+            // Crear el archivo y almacenarlo en el storage
+            Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+            
+            $mapLabs = [
+                1 => 'americas',
+                2 => 'ens',
+                3 => 'chap',
+                4 => 'mty',
+                5 => 'pue',
+                6 => 'slp'
+            ];
+            
+            if(in_array($data['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
+                $cc = 'captura' . $mapLabs[$data['laboratory_id']] . '@augenlabs.com';
+                Mail::to('sistemas@augenlabs.com')
+                ->cc($cc)
+                ->send(new RequestRx($data,$content));
+            } else {
+                Mail::to('sistemas@augenlabs.com')->send(new RequestRx( $data,$content));
+            }
+        }
+            
+        $order->save();
         $reason = $request->input('reason');
 
         DB::table('orders_log')
@@ -1361,7 +1551,7 @@ class OrdersController extends Controller
               'logged_at' => date('Y-m-d H:i:s')
         ]);
 
-        return response()->json(['msg' => 'Estatus de la orden se cambio a ' . $order->status ]);
+        return response()->json(['msg' => 'Estatus de la orden se cambio a ' . $order->status, $orderData]);
     }
 
     public function export(Request $request)
@@ -1471,10 +1661,24 @@ class OrdersController extends Controller
 
     public function getOrdersOpcs($id)
     {
-        $orders = Order::where('client_id',$id)->where('status','entregado')->get();
+        $currentDate = Carbon::now();
+        $oneMonthAgo = $currentDate->subMonth(); // Calculate the date one month ago
+
+        $orders = Order::where('client_id',$id)->whereIn('status',['entregado', 'garantia'])
+        ->where('delivered_date', '>=', $oneMonthAgo)
+        ->get();
+        
         foreach ($orders as $key => $value) {
-            $value->total_custom = '$ '.number_format($value->total,2);
+            $value->total =  floatval($value->total);
+            $value->subtotal = floatval($value->total) / (1 + (in_array($value->laboratory_id, [2, 10]) ? 0.08 : 0.16));
+            $value->total = floatval($value->total) - floatval($value->discount) - floatval($value->discount_admin) + floatval($value->iva);
+            
+            if($value->status == 'garantia')
+                $value->total_custom = '- $ '.number_format($value->total,2);
+            else
+                $value->total_custom = '$ '.number_format($value->total,2);
             $value->rxBtn = '<button class="btn btn-secondary"><i class="fas fa-eye"></i> </button>';
+            $value->actions = '<button class="btn btn-danger btn-discount" data-total="' . $value->total . '"><i class="fa fa-percent" aria-hidden="true"></i> </button>';
             $value->branch->laboratory;
             $value->productHas;
             

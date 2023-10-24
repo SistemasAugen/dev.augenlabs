@@ -431,13 +431,13 @@
                 </div>
                 </div>
 
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <div class="col-sm-12">
                        
                         <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button>
                         <button type="button" class="btn btn-dark pull-left" style="background-color: black;color: white;" @click="requestRx(indx_show)">Solicitar RX</button>
                     </div>
-                </div>
+                </div> -->
 
             </form>
 

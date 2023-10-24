@@ -110,7 +110,7 @@
                                 </td>
                                 <td v-if="!cart.cancelled">${{ cart.total_real }}</td>
                                 <td v-else>{{ 0 | currency }} </td>
-                                <button class="btn" @click="selectOrder(cart)">{{ cart.status.replace("_"," ") }}</button>
+                                <button class="btn" @click="selectOrder(cart, i)">{{ cart.status.replace("_"," ") }}</button>
                                 <td>{{ cart.created_at }}</td>
                             </tr>
                         </tbody>
@@ -136,6 +136,155 @@
                 </div>
             </div>
         </div>
+        <sweet-modal ref="showRxModal" width="60%"  @close="handleModalClose">
+            <form role="form" class="form-horizontal" v-if="indx_show != null">
+                <div>
+                    <div class="col-sm-6" style="text-align: left;">
+                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
+                    </div>
+                    <div class="col-sm-3"></div>
+                    <div class="col-sm-3" style="text-align: right;">
+                        <h3><b>{{ orders[indx_show].branch.name }}</b></h3>
+                        <h4><b>{{ orders[indx_show].branch.laboratory.name }}</b></h4>
+                    </div>
+                </div>
+                <hr>
+                <br>
+                <p style="text-align: left;"><b>CAPTURA DE DATOS</b></p>
+                <div class="form-group">
+                    <div class="col-sm-3" style="text-align: left;">
+                        <label style="font-weight:300">RX:</label>
+                        <input v-model="orders[indx_show].rx_rx" disabled class="form-control" id="rx">
+                    </div>
+                    <div class="col-sm-3" style="text-align: left;">
+                        <label style="font-weight:300">FECHA:</label>
+                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date" disabled>
+                    </div>
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">CLIENTE:</label>
+                        <input v-model="orders[indx_show].rx_cliente" disabled class="form-control" id="fecha">
+                    </div>
+                </div>
+                <br>
+                <p style="text-align: left;"><b>GRADUACION</b></p>
+                <div class="form-group">
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ESFERA</label>
+                        <input v-model="orders[indx_show].rx_od_esfera" class="form-control" id="od_esfera">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD CILINDRO</label>
+                        <input v-model="orders[indx_show].rx_od_cilindro" class="form-control" id="od_cilindro">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD EJE</label>
+                        <input v-model="orders[indx_show].rx_od_eje" class="form-control" id="od_eje">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ADICION</label>
+                        <input v-model="orders[indx_show].rx_od_adicion" class="form-control" id="od_adicion">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD DIP</label>
+                        <input v-model="orders[indx_show].rx_od_dip" class="form-control" id="od_dip">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ALTURA</label>
+                        <input v-model="orders[indx_show].rx_od_altura" class="form-control" id="od_altura" >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ESFERA</label>
+                        <input v-model="orders[indx_show].rx_od_esfera_dos" class="form-control" id="od_esfera_dos">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD CILINDRO</label>
+                        <input v-model="orders[indx_show].rx_od_cilindro_dos" class="form-control" id="od_cilindro_dos">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD EJE</label>
+                        <input v-model="orders[indx_show].rx_od_eje_dos" class="form-control" id="od_eje_dos">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ADICION</label>
+                        <input v-model="orders[indx_show].rx_od_adicion_dos" class="form-control" id="od_adicion_dos">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD DIP</label>
+                        <input v-model="orders[indx_show].rx_od_dip_dos" class="form-control" id="od_dip_dos">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300">OD ALTURA</label>
+                        <input v-model="orders[indx_show].rx_od_altura_dos" class="form-control" id="od_altura_dos">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">DISEÑO:</label>
+                        <input v-model="orders[indx_show].rx_diseno" disabled class="form-control" id="rx_diseno">
+                    </div>
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">MATERIAL:</label>
+                        <input v-model="orders[indx_show].rx_material" disabled class="form-control" id="rx_diseno">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">TIPO AR:</label>
+                        <v-select v-model="orders[indx_show].rx_tipo_ar" :options="tipoarOpcs" label="label" index="value"/>
+                    </div>
+                    <div class="col-sm-6" style="text-align: left;">
+                        <label style="font-weight:300">TALLADO:</label>
+                        <v-select v-model="orders[indx_show].rx_tallado" :options="talladoOpcs" label="label" index="value"/>
+                    </div>
+                </div>
+                <br>
+                <p style="text-align: left;"><b>SERVICIOS</b></p>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align: left;">
+                        <input v-model="orders[indx_show].rx_servicios" class="form-control" id="rx_servicios">
+                    </div>
+                </div>
+                <br>
+                <p style="text-align: left;"><b>ARMAZÓN</b></p>
+                <div class="form-group">
+                    <div class="col-sm-4" style="text-align: left;">
+                        <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
+                        <v-select v-model="orders[indx_show].rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value"/>
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300;font-size: 13px;">HORIZONTAL "A"</label>
+                        <input v-model="orders[indx_show].rx_horizontal_a" class="form-control" id="rx_horizontal_a">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300;font-size: 13px;">VERTICAL "B"</label>
+                        <input v-model="orders[indx_show].rx_vertical_b" class="form-control" id="vertical_b">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300;font-size: 13px;">DIAGONAL "ED"</label>
+                        <input v-model="orders[indx_show].rx_diagonal_ed" class="form-control" id="diagonal_ed">
+                    </div>
+                    <div class="col-sm-2" style="text-align: left;">
+                        <label style="font-weight:300;font-size: 13px;">PUENTE</label>
+                        <input v-model="orders[indx_show].rx_puente" class="form-control" id="rx_puente">
+                    </div>
+                </div>
+                <br>
+                <p style="text-align: left;"><b>OBSERVACIONES</b></p>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align: left;">
+                        <textarea v-model="orders[indx_show].rx_observaciones" class="form-control" id="rx_rx_observaciones"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button>
+                    </div>
+                </div>
+            </form>
+        </sweet-modal>
     </div>
 </template>
 <script>
@@ -147,7 +296,26 @@ export default {
             clients:[],
             orders:[],
             order:{},
-            rxStatus: ''
+            rxStatus: '',
+            indx_show: null,
+            idx: null,
+            tipoarOpcs: [
+                {value:'Ninguno',label:'Ninguno'},
+                {value:'Matiz-e',label:'Matiz-e'},
+                {value:'Gold',label:'Gold'},
+                {value:'Azul',label:'Azul'},
+                
+            ],
+            talladoOpcs: [
+                {value:'Digital',label:'Digital'},
+                {value:'Free Form',label:'Free Form'},
+            ],
+            tipo_armazonOpcs: [
+                {value:'Metálico',label:'Metálico'},
+                {value:'Perforado',label:'Perforado'},
+                {value:'Plástico',label:'Plástico'},
+                {value:'Ranurado',label:'Ranurado'},
+            ],
         }
     },
     methods:{
@@ -165,6 +333,8 @@ export default {
         },
         searchRX:function(){
             this.$parent.inPetition=true;
+            this.orders = [];
+            console.log('Orders clean');
             axios.get(tools.url("/api/order/search/"+this.rx)).then((response)=>{
                         let orders=response.data;
                         this.orders=orders;
@@ -189,16 +359,18 @@ export default {
                         this.$parent.handleErrors(err);
                     });
         },
-        selectOrder:function(order){
+        selectOrder:function(order, idx){
             if(order.status=="en_proceso"){
                 return false;
             }
             this.order=order;
+            this.idx = idx;
             alertify.statusDialog(document.getElementById('status_table'));
         },
         setReasonAndChange(reason) {
             this.$parent.inPetition = true;
-            axios.post(tools.url("api/orders/statusWarranty/" + this.order.id), { reason }).then(result => {
+            let order = this.order;
+            axios.post(tools.url("api/orders/statusWarranty/" + this.order.id), { reason, order }).then(result => {
                 this.$parent.inPetition = false;
                 this.$parent.showMessage(result.data.msg, "success");
                 this.clients=[];
@@ -246,7 +418,9 @@ export default {
                             <option>APOYO LIVERPOOL</option>
                         </select>
                         `, () => {
-                            this.setReasonAndChange(this.rxStatus);
+                            // this.setReasonAndChange(this.rxStatus);
+                            this.indx_show = this.idx;
+                            this.$refs.showRxModal.open();
                         }, () => {
                             this.rxStatus = '';
                         })
@@ -269,6 +443,9 @@ export default {
                     });
                 });
             }
+        },
+        handleModalClose() {
+            this.setReasonAndChange(this.rxStatus);
         }
     },
     mounted(){

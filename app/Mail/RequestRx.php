@@ -29,7 +29,7 @@ class RequestRx extends Mailable
      */
     public function build()
     {
-        return $this->subject($this->inputs['pvd'].' - '.date('d-m-Y'))
+        return $this->subject($this->inputs['pvd'] . ' - ' . date('d-m-Y') . ' RX ' . $this->inputs['rx_rx'])
             ->markdown('emails.requestrx')
             ->with(['inputs'=> $this->inputs])
             ->attachData($this->pdf, $this->inputs['pvd'].' - '.date('d-m-Y'),[

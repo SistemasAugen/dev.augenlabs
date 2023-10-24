@@ -193,8 +193,17 @@ class ClientsController extends Controller {
      */
     public function update(Request $request, $id)
     {
-        
-        $client=Client::find($id);
+
+        $client = Client::find($id);
+        if($client->status != $request->input('status')) {
+            // If status changes we log which user is
+            DB::table('users_log')->insert([
+                'user_id'   => Auth::id(),
+                'client_id' => $id,
+                'status'    => $request->status,
+            ]);
+        }
+
         $client->name=$request->name;
         $client->email=$request->email;
         $client->phone=$request->phone;
@@ -219,6 +228,7 @@ class ClientsController extends Controller {
         if(isset($request->password)){
             $client->password = Hash::make($request->password);
         }
+        
         $client->save();
 
         if($request->discounts){
@@ -333,7 +343,7 @@ class ClientsController extends Controller {
         $clients = Client::where(function($query) use ($key){
             $query->where('name','like','%'.$key.'%')->orWhere('comertial_name','like','%'.$key.'%');
         })->where('branch_id', Auth::user()->branch_id)
-        ->where('status', 'Activo')
+        // ->where('status', 'Activo')
         ->orWhereIn('id', [ 1862, 1901 ])
         ->get();
 

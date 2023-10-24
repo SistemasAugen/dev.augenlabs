@@ -157,9 +157,23 @@
 					<td><p>{{ $rx['rx_fecha'] }}</p></td>
 					<td><p>{{ $rx['rx'] }}</p></td>
 					<td><p>{{ $rx['description'] }}</p></td>
-					<td><p>$ {{ number_format($rx['total'],2) }}</p></td>
+					@if($rx['status'] != 'garantia')
+						<td><p>$ {{ number_format($rx['total'],2) }}</p></td>
+					@else
+						<td><p><b>- $ {{ number_format($rx['total'],2) }}</b></p></td>
+					@endif
 				</tr>
 			@endforeach
+			<!-- <tr>
+				<td colspan="3" style="border:none;text-align: left;"><p style="padding-top: 4px;text-align: right;"><b>Subtotal: $</b></p></td>
+				
+				<th style="border-radius: 13px 13px 13px 13px" >$  {{ number_format($inputs['subtotal'],2)}}</th>
+			</tr>
+			<tr>
+				<td colspan="3" style="border:none;text-align: left;"><p style="padding-top: 4px;text-align: right;"><b>IVA: $</b></p></td>
+				
+				<th style="border-radius: 13px 13px 13px 13px" >$  {{ number_format($inputs['tax'],2)}}</th>
+			</tr> -->
 			<tr>
 				<td colspan="3" style="border:none;text-align: left;"><p style="padding-top: 4px;text-align: right;"><b>Total: $</b></p></td>
 				

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Type;
 use app\Http\Requests\TypesRequest;
+use Illuminate\Support\Facades\Auth;
 
 class TypesController extends Controller
 {
@@ -15,7 +16,12 @@ class TypesController extends Controller
      */
     public function index()
     {
-        $types=Type::all();
+        $id = Auth::id();
+        if($id == 106) {
+            $types = Type::whereIn('id', [1,2,3])->get();
+        } else {
+            $types = Type::all();
+        }
         foreach ($types as $key => $value) {
             $value->categories;
         }

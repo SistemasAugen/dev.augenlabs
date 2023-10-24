@@ -646,10 +646,20 @@
                 <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
                 <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
 						</div>
-            <div class="col-sm-3"></div>
-            <div class="col-sm-3" style="text-align: right;">
+            <div class="col-sm-6" style="text-align: right;">
                 <h3><b>{{ client.branch.name }}</b></h3>
-                <h4><b>{{ client.branch.laboratory.name }}</b></h4>
+                <div v-if="[1, 2, 3, 4, 5, 6].includes(client.branch.laboratory_id) && 'laboratory_id' && $parent.sale.cart[index_prod]">
+                  <label>Laboratorio: </label>
+                  <v-select v-model="$parent.sale.cart[index_prod].laboratory_id" :options="[
+                    { id: 1, name: 'LABORATORIO GUADALAJARA'},
+                    { id: 2, name: 'LABORATORIO ENSENADA'},
+                    { id: 3, name: 'LABORATORIO CHAPULTEPEC'},
+                    { id: 4, name: 'LABORATORIO MONTERREY'},
+                    { id: 5, name: 'LABORATORIO PUEBLA'},
+                    { id: 6, name: 'LABORATORIO SAN LUIS POTOSI'},
+                  ]" label="name" index="id"></v-select>
+                </div>
+                <h4 v-else><b>{{ client.branch.laboratory.name }}</b></h4>
 						</div>
 
         </div>
@@ -882,7 +892,7 @@
               <!-- <button type="button" class="btn btn-dark pull-left" style="background-color: black;color: white;" @click="requestRx(index_prod)">Solicitar RX</button>
                
 							<button type="submit" class="btn btn-success pull-right" @click="$refs.modalRx.close()"><i class="far fa-save"></i> Guardar</button> -->
-							<button type="button" class="btn btn-default pull-right" @click="$refs.modalRx.close()">Cancelar</button>
+							<!-- <button type="button" class="btn btn-default pull-right" @click="$refs.modalRx.close()">Cancelar</button> -->
 						</div>
 					</div>
 
@@ -993,7 +1003,6 @@ export default {
         block:false,
         msg:null
       }
-
     };
   },
   computed: {
@@ -1067,7 +1076,8 @@ export default {
               rx: row.rx,
               percent_discount: row.percent_discount,
               extras: extras,
-              rx_data: row.rx_data
+              rx_data: row.rx_data,
+              laboratory_id: row.laboratory_id
             };
           });
           axios
@@ -1685,6 +1695,10 @@ export default {
         this.$parent.sale.cart[indx].rx_data.rx_caracteristicas = this.$parent.sale.cart[indx].product.type_name;
 
         
+        if([1, 2, 3, 4, 5, 6].includes(this.client.branch.laboratory_id)) {
+          this.$parent.sale.cart[indx].laboratory_id = this.client.branch.laboratory_id;
+        }
+        
         this.$refs.modalRx.open();
     },
     isNumber: function(evt) {
@@ -1723,31 +1737,31 @@ export default {
     changeRXdata(indx){
 
 
-      for (let x = 0; x < this.$parent.sale.cart.length; x++) {
+      // for (let x = 0; x < this.$parent.sale.cart.length; x++) {
           var checkform = false;
-          if (this.$parent.sale.cart[x]['rx_data']['rx_diagonal_ed'] != null && this.$parent.sale.cart[x]['rx_data']['rx_diagonal_ed'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_horizontal_a'] != null && this.$parent.sale.cart[x]['rx_data']['rx_horizontal_a'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_observaciones'] != null && this.$parent.sale.cart[x]['rx_data']['rx_observaciones']  != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_adicion'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_adicion'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_adicion_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_adicion_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_altura'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_altura'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_altura_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_altura_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro_dos'] != null &&  this.$parent.sale.cart[x]['rx_data']['rx_od_cilindro_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_dip'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_dip'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_dip_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_dip_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_eje'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_eje'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_eje_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_eje_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_esfera'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_esfera'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_od_esfera_dos'] != null && this.$parent.sale.cart[x]['rx_data']['rx_od_esfera_dos'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_puente'] != null && this.$parent.sale.cart[x]['rx_data']['rx_puente'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_servicios'] != null && this.$parent.sale.cart[x]['rx_data']['rx_servicios'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_tallado'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tallado'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_tipo_ar'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tipo_ar'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_tipo_armazon'] != null && this.$parent.sale.cart[x]['rx_data']['rx_tipo_armazon'] != '') {checkform = true;}
-          if (this.$parent.sale.cart[x]['rx_data']['rx_vertical_b'] != null && this.$parent.sale.cart[x]['rx_data']['rx_vertical_b'] != '') {checkform = true;}
-          this.$parent.sale.cart[x]['rx_data']['have_data'] = checkform;
-        }
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_diagonal_ed'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_diagonal_ed'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_horizontal_a'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_horizontal_a'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_observaciones'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_observaciones']  != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_adicion'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_adicion'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_adicion_dos'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_adicion_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_altura'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_altura'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_altura_dos'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_altura_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_cilindro'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_cilindro'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_cilindro_dos'] != null &&  this.$parent.sale.cart[indx]['rx_data']['rx_od_cilindro_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_dip'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_dip'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_dip_dos'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_dip_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_eje'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_eje'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_eje_dos'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_eje_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_esfera'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_esfera'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_od_esfera_dos'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_od_esfera_dos'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_puente'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_puente'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_servicios'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_servicios'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_tallado'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_tallado'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_tipo_ar'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_tipo_ar'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_tipo_armazon'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_tipo_armazon'] != '') {checkform = true;}
+          if (this.$parent.sale.cart[indx]['rx_data']['rx_vertical_b'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_vertical_b'] != '') {checkform = true;}
+          this.$parent.sale.cart[indx]['rx_data']['have_data'] = checkform;
+        // }
     }
   },
   mounted() {

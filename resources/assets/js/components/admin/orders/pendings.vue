@@ -95,6 +95,12 @@ export default {
             });
         },
         finishOrder:function(id){
+            const order = this.orders.filter(o => o.id == id).shift();
+            console.log(order);
+            if (order.client.status == 'Inactivo') {
+                alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
+                return false;
+            }
             alertify.confirm('¿Deseas marcar como terminado este RX?', ()=>{
                 this.$parent.inPetition=true;
                 let params={
@@ -162,6 +168,7 @@ export default {
         ajaxRequest(params) {
             axios.get('/api/orders/pending' + '?' + jQuery.param(params.data) + '&ajax=true').then(result => {
                 // this.heightTable = 460;
+                this.orders = result.data.rows;
                 params.success(result.data);
                 let that = this;
                 jQuery('.btn-change').click(function() {

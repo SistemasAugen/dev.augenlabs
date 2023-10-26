@@ -209,27 +209,27 @@
 
 				<div class="form-group">
 								<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD ESFERA</label>
+					<label style="font-weight:300">OI ESFERA</label>
 					<input v-model="orders[indx_show].rx_od_esfera_dos" class="form-control" id="od_esfera_dos" disabled>
 								</div>
 					<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD CILINDRO</label>
+					<label style="font-weight:300">OI CILINDRO</label>
 					<input v-model="orders[indx_show].rx_od_cilindro_dos" class="form-control" id="od_cilindro_dos" disabled>
 								</div>
 					<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD EJE</label>
+					<label style="font-weight:300">OI EJE</label>
 					<input v-model="orders[indx_show].rx_od_eje_dos" class="form-control" id="od_eje_dos" disabled>
 								</div>
 					<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD ADICION</label>
+					<label style="font-weight:300">OI ADICION</label>
 					<input v-model="orders[indx_show].rx_od_adicion_dos" class="form-control" id="od_adicion_dos" disabled>
 								</div>
 					<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD DIP</label>
+					<label style="font-weight:300">OI DIP</label>
 					<input v-model="orders[indx_show].rx_od_dip_dos" class="form-control" id="od_dip_dos" disabled>
 								</div>
 					<div class="col-sm-2" style="text-align: left;">
-					<label style="font-weight:300">OD ALTURA</label>
+					<label style="font-weight:300">OI ALTURA</label>
 					<input v-model="orders[indx_show].rx_od_altura_dos" class="form-control" id="od_altura_dos" disabled>
 								</div>
 				</div>
@@ -364,6 +364,7 @@
 				talladoOpcs:[
 					{value:'Digital',label:'Digital'},
 					{value:'Free Form',label:'Free Form'},
+					{value:'HD',label:'HD'},
 				],
 				tipo_armazonOpcs:[
 					{value:'Metálico',label:'Metálico'},

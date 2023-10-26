@@ -155,11 +155,11 @@
                 <div class="form-group">
                     <div class="col-sm-3" style="text-align: left;">
                         <label style="font-weight:300">RX:</label>
-                        <input v-model="orders[indx_show].rx_rx" disabled class="form-control" id="rx">
+                        <input v-model="orders[indx_show].rx_rx" class="form-control" id="rx">
                     </div>
                     <div class="col-sm-3" style="text-align: left;">
                         <label style="font-weight:300">FECHA:</label>
-                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date" disabled>
+                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date">
                     </div>
                     <div class="col-sm-6" style="text-align: left;">
                         <label style="font-weight:300">CLIENTE:</label>
@@ -196,38 +196,38 @@
                 </div>
                 <div class="form-group">
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD ESFERA</label>
+                        <label style="font-weight:300">OI ESFERA</label>
                         <input v-model="orders[indx_show].rx_od_esfera_dos" class="form-control" id="od_esfera_dos">
                     </div>
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD CILINDRO</label>
+                        <label style="font-weight:300">OI CILINDRO</label>
                         <input v-model="orders[indx_show].rx_od_cilindro_dos" class="form-control" id="od_cilindro_dos">
                     </div>
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD EJE</label>
+                        <label style="font-weight:300">OI EJE</label>
                         <input v-model="orders[indx_show].rx_od_eje_dos" class="form-control" id="od_eje_dos">
                     </div>
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD ADICION</label>
+                        <label style="font-weight:300">OI ADICION</label>
                         <input v-model="orders[indx_show].rx_od_adicion_dos" class="form-control" id="od_adicion_dos">
                     </div>
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD DIP</label>
+                        <label style="font-weight:300">OI DIP</label>
                         <input v-model="orders[indx_show].rx_od_dip_dos" class="form-control" id="od_dip_dos">
                     </div>
                     <div class="col-sm-2" style="text-align: left;">
-                        <label style="font-weight:300">OD ALTURA</label>
+                        <label style="font-weight:300">OI ALTURA</label>
                         <input v-model="orders[indx_show].rx_od_altura_dos" class="form-control" id="od_altura_dos">
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-6" style="text-align: left;">
                         <label style="font-weight:300">DISEÑO:</label>
-                        <input v-model="orders[indx_show].rx_diseno" disabled class="form-control" id="rx_diseno">
+                        <input v-model="orders[indx_show].rx_diseno" class="form-control" id="rx_diseno">
                     </div>
                     <div class="col-sm-6" style="text-align: left;">
                         <label style="font-weight:300">MATERIAL:</label>
-                        <input v-model="orders[indx_show].rx_material" disabled class="form-control" id="rx_diseno">
+                        <input v-model="orders[indx_show].rx_material" class="form-control" id="rx_diseno">
                     </div>
                 </div>
                 <div class="form-group">
@@ -280,7 +280,7 @@
                 </div>
                 <div class="form-group">
                     <div class="col-sm-12">
-                        <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button>
+                        <!-- <button type="button" class="btn btn-default pull-right" @click="$refs.showRxModal.close()">Cerrar</button> -->
                     </div>
                 </div>
             </form>
@@ -309,6 +309,7 @@ export default {
             talladoOpcs: [
                 {value:'Digital',label:'Digital'},
                 {value:'Free Form',label:'Free Form'},
+                {value:'HD',label:'HD'},
             ],
             tipo_armazonOpcs: [
                 {value:'Metálico',label:'Metálico'},
@@ -361,6 +362,11 @@ export default {
         },
         selectOrder:function(order, idx){
             if(order.status=="en_proceso"){
+                return false;
+            }
+            
+            if (order.client.status == 'Inactivo') {
+                alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
                 return false;
             }
             this.order=order;
@@ -418,9 +424,13 @@ export default {
                             <option>APOYO LIVERPOOL</option>
                         </select>
                         `, () => {
-                            // this.setReasonAndChange(this.rxStatus);
-                            this.indx_show = this.idx;
-                            this.$refs.showRxModal.open();
+                            if(this.order.have_data) {
+                                this.indx_show = this.idx;
+                                this.$refs.showRxModal.open();
+                            } else {
+                                alert('Esta receta no tiene información adicional');
+                                this.setReasonAndChange(this.rxStatus);
+                            }
                         }, () => {
                             this.rxStatus = '';
                         })

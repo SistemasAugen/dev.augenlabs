@@ -1450,6 +1450,7 @@ class OrdersController extends Controller
     }
 
     public function changeStatusWarranty($id, Request $request) {
+        $user = Auth::user();
         $order = Order::findOrFail($id);
         $branch = Branch::find($order->branch_id);
         $order->status = 'garantia';
@@ -1532,11 +1533,11 @@ class OrdersController extends Controller
             
             if(in_array($data['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
                 $cc = 'captura' . $mapLabs[$data['laboratory_id']] . '@augenlabs.com';
-                Mail::to('sistemas@augenlabs.com')
+                Mail::to($user->email)
                 ->cc($cc)
                 ->send(new RequestRx($data,$content));
             } else {
-                Mail::to('sistemas@augenlabs.com')->send(new RequestRx( $data,$content));
+                Mail::to($user->email)->send(new RequestRx( $data,$content));
             }
         }
             
@@ -1551,7 +1552,7 @@ class OrdersController extends Controller
               'logged_at' => date('Y-m-d H:i:s')
         ]);
 
-        return response()->json(['msg' => 'Estatus de la orden se cambio a ' . $order->status, $orderData]);
+        return response()->json(['msg' => 'Estatus de la orden se cambio a ' . $order->status]);
     }
 
     public function export(Request $request)

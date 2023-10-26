@@ -139,33 +139,33 @@
 	<br><br><br><br>
     <div class="form-group">
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD ESFERA:</span><br>
+            <span style="text-align: left;">OI ESFERA:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_esfera_dos'] }}</p></div>
 		</div>
 		
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD CILINDRO:</span><br>
+            <span style="text-align: left;">OI CILINDRO:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_cilindro_dos'] }}</p></div>
 		</div>
 
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD EJE:</span><br>
+            <span style="text-align: left;">OI EJE:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_eje_dos'] }}</p></div>
 		</div>
 
 		
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD ADICION:</span><br>
+            <span style="text-align: left;">OI ADICION:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_adicion_dos'] }}</p></div>
 		</div>
 		
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD DIP:</span><br>
+            <span style="text-align: left;">OI DIP:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_dip_dos'] }}</p></div>
 		</div>
         
 		<div class="col-sm-1" style="">
-            <span style="text-align: left;">OD ALTURA:</span><br>
+            <span style="text-align: left;">OI ALTURA:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_od_altura_dos'] }}</p></div>
 		</div>
     </div>

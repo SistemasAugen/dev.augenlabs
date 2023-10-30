@@ -611,9 +611,10 @@ class OrdersController extends Controller
 
         if($checkform) {
             $laboratoryId = $request->laboratory_id;
+            $laboratory = Laboratory::findOrFaiL($laboratoryId);
             $data = $order->toArray();
             $data['pvd'] = $branch->name;
-            $data['laboratory'] = $branch->laboratory->name;
+            $data['laboratory'] = $laboratory->name;
             $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
             $content = $pdf->download()->getOriginalContent();
             Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);

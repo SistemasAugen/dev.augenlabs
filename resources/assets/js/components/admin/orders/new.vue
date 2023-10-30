@@ -1241,6 +1241,11 @@ export default {
         .set("labels", { ok: "Aceptar", cancel: "Cancelar" });
     },
     selectClient: function (client_id) {
+      const client = this.clients.filter(id => client_id).shift();
+      
+      if(client.status == "Inactivo") {
+        alert('Estás apunto de capturar una RX de un cliente bloqueado');
+      }
       this.$parent.sale.client_id = client_id;
       this.getClient();
       alertify.clientsDialog().close();

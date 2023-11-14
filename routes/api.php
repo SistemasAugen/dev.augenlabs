@@ -16,6 +16,7 @@ Route::group(['prefix' => 'v2'], function() {
 });
 
 Route::group(['prefix' => 'v1'], function() {
+    Route::post('resend_rx', 'OrdersController@resendRx');
 	Route::get('orders', 'OrdersController@screen');
 	Route::post('re', 'HomeController@re');
 	Route::get('re', 'HomeController@re');

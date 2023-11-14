@@ -155,11 +155,11 @@
                 <div class="form-group">
                     <div class="col-sm-3" style="text-align: left;">
                         <label style="font-weight:300">RX:</label>
-                        <input v-model="orders[indx_show].rx_rx" class="form-control" id="rx">
+                        <input v-model="orders[indx_show].rx_rx" class="form-control" id="rx" disabled>
                     </div>
                     <div class="col-sm-3" style="text-align: left;">
                         <label style="font-weight:300">FECHA:</label>
-                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date">
+                        <input v-model="orders[indx_show].rx_fecha" class="form-control" id="fecha" type="date" disabled>
                     </div>
                     <div class="col-sm-6" style="text-align: left;">
                         <label style="font-weight:300">CLIENTE:</label>
@@ -361,14 +361,10 @@ export default {
                     });
         },
         selectOrder:function(order, idx){
-            if(order.status=="en_proceso"){
+            if(order.status == "en_proceso"){
                 return false;
             }
             
-            if (order.client.status == 'Inactivo') {
-                alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
-                return false;
-            }
             this.order=order;
             this.idx = idx;
             alertify.statusDialog(document.getElementById('status_table'));
@@ -424,17 +420,29 @@ export default {
                             <option>APOYO LIVERPOOL</option>
                         </select>
                         `, () => {
-                            if(this.order.have_data) {
-                                this.indx_show = this.idx;
-                                this.$refs.showRxModal.open();
-                            } else {
-                                alert('Esta receta no tiene información adicional');
-                                this.setReasonAndChange(this.rxStatus);
+                            if(!this.order.have_data) {
+                                // alert('Esta receta no tiene información adicional');
+
+                                // pre-fill order
+                                this.order.rx_rx = this.order.rx;
+                                this.order.rx_cliente = this.order.client.name;
+                                this.order.rx_fecha = this.order.created_at.split(' ')[0];
                             }
+
+                            this.$refs.showRxModal.open();
+                            this.indx_show = this.idx;
+                        
                         }, () => {
                             this.rxStatus = '';
                         })
             } else {
+
+                if (this.order.status != 'garantia' && this.order.client.status == 'Inactivo') {
+                    alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
+                    alertify.closeAll();
+                    return false;
+                }
+
                 alertify.confirm('¿Seguro que deseas cambiar el estatus de este RX?', () => {
                     this.$parent.inPetition=true;
                     let params = {
@@ -456,6 +464,8 @@ export default {
         },
         handleModalClose() {
             this.setReasonAndChange(this.rxStatus);
+            this.indx_show = null;
+            this.rxStatus = '';
         }
     },
     mounted(){

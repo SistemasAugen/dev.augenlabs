@@ -1241,7 +1241,7 @@ export default {
         .set("labels", { ok: "Aceptar", cancel: "Cancelar" });
     },
     selectClient: function (client_id) {
-      const client = this.clients.filter(id => client_id).shift();
+      const client = this.clients.filter(client => client.id == client_id).shift();
       
       if(client.status == "Inactivo") {
         alert('Estás apunto de capturar una RX de un cliente bloqueado');

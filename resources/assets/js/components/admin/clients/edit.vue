@@ -38,7 +38,7 @@
                                         <input-form name="direccion" text="Direccion" :data.sync="client.address" validate="required"></input-form>
                                         <input-form name="colonia" text="Colonia" :data.sync="client.suburb" validate="required"></input-form>
 										<select-form text="PDV" name="punto de venta" :options="branches" :data.sync="client.branch"></select-form>
-										<select-form text="Estatus" name="estatus" :options="statusOp" :data.sync="client.status" @update:data="setReason" :disabled="!allowedUsers.includes(userId)"></select-form>
+										<select-form text="Estatus" name="estatus" :options="statusOp" :data.sync="client.status" :disabled="!allowedUsers.includes(userId)"></select-form>
 										<select-form text="División" name="category" :options="['DOCTORES', 'CADENAS', 'OFTALMÓLOGOS']" :data.sync="client.category"></select-form>
 										<hr/>
 											<input-form name="notification_mail" text="Correo de notificaciones" :data.sync="client.notification_mail" validate=""></input-form>
@@ -292,6 +292,14 @@
 				this.client.discounts.forEach((val,k)=>{
 					this.client.discounts[k].discount=v;
 				});
+			},
+			'client.status': {
+				handler:function(newValue, oldValue) {
+					if(newValue == 'Inactivo' && oldValue == 'Activo') {
+						this.setReason(newValue);
+					}
+				},
+				deep:true
 			}
         },
 		methods:{

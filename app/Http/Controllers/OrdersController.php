@@ -140,12 +140,12 @@ class OrdersController extends Controller
                 if ($client) {
                     if($value['rx_data']['have_data']) {
                         if(in_array($value['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
-                            $cc = 'captura' . $mapLabs[$value['laboratory_id']] . '@augenlabs.com';
-                            Mail::to($user->email)
-                            ->cc($cc)
-                            ->send(new RequestRx($value['rx_data'],$content));
+                            // $cc = 'captura' . $mapLabs[$value['laboratory_id']] . '@augenlabs.com';
+                            Mail::to('sistemas@augenlabs.com')
+                            // ->cc($cc)
+                            ->send(new RequestRx($value['rx_data'], $content, 'CAPTURA'));
                         } else {
-                            Mail::to($user->email)->send(new RequestRx($value['rx_data'],$content));
+                            Mail::to('sistemas@augenlabs.com')->send(new RequestRx($value['rx_data'], $content, 'CAPTURA'));
                         }
                     }
                 }
@@ -297,6 +297,9 @@ class OrdersController extends Controller
             foreach ($rows as $key => $value) {
                 $value->productHas;
                 $value->extras;
+                $value->branch;
+                $value->branch->laboratory;
+
                 try {
                     if(count($value->extras) > 0)
                         $value->computedExtras = implode(', ', array_map(function($e) {
@@ -320,6 +323,10 @@ class OrdersController extends Controller
                 else
                     $value->statusButton = '<button class="btn btn-warning btn-change" data-id="' . $value->id . '">Garantía</button>';
                 $value->moveButton = '<button class="btn btn-move" data-id="' . $value->id . '"> <i class="fas fa-arrows-alt"></i> </button>';
+                if(isset($value->rx_rx) && $value->rx_rx != '')
+                    $value->showButton = '<button class="btn btn-show" data-id="' . $value->id . '"> <i class="fas fa-eye"></i> </button>';
+                else
+                    $value->showButton = '-';
             }
 
             return response()->json(compact('rows', 'total', 'totalNotFiltered'));
@@ -394,6 +401,7 @@ class OrdersController extends Controller
             $value->extras;
             $value->client;
             $value->branch;
+            $value->branch->laboratory;
         }
 
         foreach ($orders as $key => $value) {
@@ -628,11 +636,12 @@ class OrdersController extends Controller
                 6 => 'slp'
             ];
     
-            if(in_array($laboratoryId, [1, 2, 3, 4, 5, 6])) {
-                $mailTo = 'captura' . $mapLabs[$laboratoryId] . '@augenlabs.com';
-                Mail::to($mailTo)
-                    ->send(new RequestRx($data,$content));
-            }
+            // if(in_array($laboratoryId, [1, 2, 3, 4, 5, 6])) {
+            //     $mailTo = 'captura' . $mapLabs[$laboratoryId] . '@augenlabs.com';
+            //     $title = sprintf('RX MOVIDA DE %s A %s', $branch->laboratory->name, $laboratory->name);
+            //     Mail::to($mailTo)
+            //         ->send(new RequestRx($data, $content, $title));
+            // }
         }
 
         $order->laboratory_id=$request->laboratory_id;
@@ -1457,32 +1466,32 @@ class OrdersController extends Controller
         $order->status = 'garantia';
         $order->warranty_date = date('Y-m-d H:i:s');
 
-        $checkform = false;
-        if ($order->rx_diagonal_ed != null && $order->rx_diagonal_ed != '') {$checkform = true;}
-        if ($order->rx_horizontal_a != null && $order->rx_horizontal_a != '') {$checkform = true;}
-        if ($order->rx_observaciones != null && $order->rx_observaciones  != '') {$checkform = true;}
-        if ($order->rx_od_adicion != null && $order->rx_od_adicion != '') {$checkform = true;}
-        if ($order->rx_od_adicion_dos != null && $order->rx_od_adicion_dos != '') {$checkform = true;}
-        if ($order->rx_od_altura != null && $order->rx_od_altura != '') {$checkform = true;}
-        if ($order->rx_od_altura_dos != null && $order->rx_od_altura_dos != '') {$checkform = true;}
-        if ($order->rx_od_cilindro != null && $order->rx_od_cilindro != '') {$checkform = true;}
-        if ($order->rx_od_cilindro_dos != null &&  $order->rx_od_cilindro_dos != '') {$checkform = true;}
-        if ($order->rx_od_dip != null && $order->rx_od_dip != '') {$checkform = true;}
-        if ($order->rx_od_dip_dos != null && $order->rx_od_dip_dos != '') {$checkform = true;}
-        if ($order->rx_od_eje != null && $order->rx_od_eje != '') {$checkform = true;}
-        if ($order->rx_od_eje_dos != null && $order->rx_od_eje_dos != '') {$checkform = true;}
-        if ($order->rx_od_esfera != null && $order->rx_od_esfera != '') {$checkform = true;}
-        if ($order->rx_od_esfera_dos != null && $order->rx_od_esfera_dos != '') {$checkform = true;}
-        if ($order->rx_puente != null && $order->rx_puente != '') {$checkform = true;}
-        if ($order->rx_servicios != null && $order->rx_servicios != '') {$checkform = true;}
-        if ($order->rx_tallado != null && $order->rx_tallado != '') {$checkform = true;}
-        if ($order->rx_tipo_ar != null && $order->rx_tipo_ar != '') {$checkform = true;}
-        if ($order->rx_tipo_armazon != null && $order->rx_tipo_armazon != '') {$checkform = true;}
-        if ($order->rx_vertical_b != null && $order->rx_vertical_b != '') {$checkform = true;}
-        
-        if($checkform) {
-            $orderData = $request->input('order');
+        $orderData = $request->input('order');
 
+        $checkform = false;
+        if ($orderData['rx_diagonal_ed'] != null && $orderData['rx_diagonal_ed'] != '') {$checkform = true;}
+        if ($orderData['rx_horizontal_a'] != null && $orderData['rx_horizontal_a'] != '') {$checkform = true;}
+        if ($orderData['rx_observaciones'] != null && $orderData['rx_observaciones']  != '') {$checkform = true;}
+        if ($orderData['rx_od_adicion'] != null && $orderData['rx_od_adicion'] != '') {$checkform = true;}
+        if ($orderData['rx_od_adicion_dos'] != null && $orderData['rx_od_adicion_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_od_altura'] != null && $orderData['rx_od_altura'] != '') {$checkform = true;}
+        if ($orderData['rx_od_altura_dos'] != null && $orderData['rx_od_altura_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_od_cilindro'] != null && $orderData['rx_od_cilindro'] != '') {$checkform = true;}
+        if ($orderData['rx_od_cilindro_dos'] != null &&  $orderData['rx_od_cilindro_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_od_dip'] != null && $orderData['rx_od_dip'] != '') {$checkform = true;}
+        if ($orderData['rx_od_dip_dos'] != null && $orderData['rx_od_dip_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_od_eje'] != null && $orderData['rx_od_eje'] != '') {$checkform = true;}
+        if ($orderData['rx_od_eje_dos'] != null && $orderData['rx_od_eje_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_od_esfera'] != null && $orderData['rx_od_esfera'] != '') {$checkform = true;}
+        if ($orderData['rx_od_esfera_dos'] != null && $orderData['rx_od_esfera_dos'] != '') {$checkform = true;}
+        if ($orderData['rx_puente'] != null && $orderData['rx_puente'] != '') {$checkform = true;}
+        if ($orderData['rx_servicios'] != null && $orderData['rx_servicios'] != '') {$checkform = true;}
+        if ($orderData['rx_tallado'] != null && $orderData['rx_tallado'] != '') {$checkform = true;}
+        if ($orderData['rx_tipo_ar'] != null && $orderData['rx_tipo_ar'] != '') {$checkform = true;}
+        if ($orderData['rx_tipo_armazon'] != null && $orderData['rx_tipo_armazon'] != '') {$checkform = true;}
+        if ($orderData['rx_vertical_b'] != null && $orderData['rx_vertical_b'] != '') {$checkform = true;}
+
+        if($checkform) {
             $rxFields = [
                 'rx_rx',
                 'rx_fecha',
@@ -1512,6 +1521,7 @@ class OrdersController extends Controller
                 'rx_puente',
                 'rx_observaciones',
             ];
+
             foreach($rxFields as $attr) {
                 $order->{$attr} = $orderData[$attr];
             }
@@ -1533,12 +1543,12 @@ class OrdersController extends Controller
             ];
             
             if(in_array($data['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
-                $cc = 'captura' . $mapLabs[$data['laboratory_id']] . '@augenlabs.com';
-                Mail::to($user->email)
-                ->cc($cc)
-                ->send(new RequestRx($data,$content));
+                // $cc = 'captura' . $mapLabs[$data['laboratory_id']] . '@augenlabs.com';
+                Mail::to('sistemas@augenlabs.com')
+                // ->cc($cc)
+                ->send(new RequestRx($data, $content, 'GARANTÍA'));
             } else {
-                Mail::to($user->email)->send(new RequestRx( $data,$content));
+                Mail::to('sistemas@augenlabs.com')->send(new RequestRx($data, $content, 'GARANTÍA'));
             }
         }
             
@@ -1624,7 +1634,7 @@ class OrdersController extends Controller
 
             $user = User::find($order->client_id);
             if ($user) {
-                //Mail::to($user->email)->send(new ContractComplete( $inputs,$content));
+                //Mail::to('sistemas@augenlabs.com')->send(new ContractComplete( $inputs,$content));
             }
         }
         return 'https://dev.augenlabs.com/storage/app/public/docs/order-'.$order->id.'.pdf';
@@ -1664,11 +1674,15 @@ class OrdersController extends Controller
     public function getOrdersOpcs($id)
     {
         $currentDate = Carbon::now();
-        $oneMonthAgo = $currentDate->subMonth(); // Calculate the date one month ago
+        $oneMonthAgo = $currentDate->subMonth()->format('Y-m-d'); // Calculate the date one month ago
 
-        $orders = Order::where('client_id',$id)->whereIn('status',['entregado', 'garantia'])
-        ->where('delivered_date', '>=', $oneMonthAgo)
-        ->get();
+        $orders = Order::where('client_id',$id)
+                        ->whereIn('status',['entregado', 'garantia'])
+                        ->where(function($query) use ($oneMonthAgo) {
+                            $query->where('delivered_date', '>=', $oneMonthAgo)
+                                  ->orWhere('delivered_date2', '>=', $oneMonthAgo);
+                        })
+                        ->get();
         
         foreach ($orders as $key => $value) {
             $value->total =  floatval($value->total);
@@ -1686,5 +1700,52 @@ class OrdersController extends Controller
             
         }
         return response()->json($orders);
+    }
+
+    public function resendRx(Request $request) {
+        try {
+            $order = Order::findOrFail($request->input('order_id'));
+            $checkform = false;
+            if ($order->rx_diagonal_ed != null && $order->rx_diagonal_ed != '') {$checkform = true;}
+            if ($order->rx_horizontal_a != null && $order->rx_horizontal_a != '') {$checkform = true;}
+            if ($order->rx_observaciones != null && $order->rx_observaciones  != '') {$checkform = true;}
+            if ($order->rx_od_adicion != null && $order->rx_od_adicion != '') {$checkform = true;}
+            if ($order->rx_od_adicion_dos != null && $order->rx_od_adicion_dos != '') {$checkform = true;}
+            if ($order->rx_od_altura != null && $order->rx_od_altura != '') {$checkform = true;}
+            if ($order->rx_od_altura_dos != null && $order->rx_od_altura_dos != '') {$checkform = true;}
+            if ($order->rx_od_cilindro != null && $order->rx_od_cilindro != '') {$checkform = true;}
+            if ($order->rx_od_cilindro_dos != null &&  $order->rx_od_cilindro_dos != '') {$checkform = true;}
+            if ($order->rx_od_dip != null && $order->rx_od_dip != '') {$checkform = true;}
+            if ($order->rx_od_dip_dos != null && $order->rx_od_dip_dos != '') {$checkform = true;}
+            if ($order->rx_od_eje != null && $order->rx_od_eje != '') {$checkform = true;}
+            if ($order->rx_od_eje_dos != null && $order->rx_od_eje_dos != '') {$checkform = true;}
+            if ($order->rx_od_esfera != null && $order->rx_od_esfera != '') {$checkform = true;}
+            if ($order->rx_od_esfera_dos != null && $order->rx_od_esfera_dos != '') {$checkform = true;}
+            if ($order->rx_puente != null && $order->rx_puente != '') {$checkform = true;}
+            if ($order->rx_servicios != null && $order->rx_servicios != '') {$checkform = true;}
+            if ($order->rx_tallado != null && $order->rx_tallado != '') {$checkform = true;}
+            if ($order->rx_tipo_ar != null && $order->rx_tipo_ar != '') {$checkform = true;}
+            if ($order->rx_tipo_armazon != null && $order->rx_tipo_armazon != '') {$checkform = true;}
+            if ($order->rx_vertical_b != null && $order->rx_vertical_b != '') {$checkform = true;}
+    
+            if($checkform) {
+                $branch = Branch::find($order->branch_id);
+                $data = $order->toArray();
+                $data['pvd'] = $branch->name;
+                $data['laboratory'] = $branch->laboratory->name;
+                $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
+                $content = $pdf->download()->getOriginalContent();
+                Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+        
+                $mailTo = $request->input('email');
+                $title = 'REENVÍO';
+                Mail::to($mailTo)->send(new RequestRx($data, $content, $title));
+                return response()->json(['status' => true, 'message' => 'RX Sent']);
+            } else {
+                return response()->json(['status' => false, 'message' => 'No info to send']);
+            }
+        } catch(\Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

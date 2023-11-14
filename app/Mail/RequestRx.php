@@ -16,10 +16,11 @@ class RequestRx extends Mailable
      *
      * @return void
      */
-    public function __construct($inputs,$pdf)
+    public function __construct($inputs,$pdf, $title = '')
     {
         $this->inputs = $inputs;
         $this->pdf = $pdf;
+        $this->title = $title;
     }
 
     /**
@@ -29,7 +30,7 @@ class RequestRx extends Mailable
      */
     public function build()
     {
-        return $this->subject($this->inputs['pvd'] . ' - ' . date('d-m-Y') . ' RX ' . $this->inputs['rx_rx'])
+        return $this->subject($this->title . ' ' . $this->inputs['pvd'] . ' - ' . date('d-m-Y') . ' RX ' . $this->inputs['rx_rx'])
             ->markdown('emails.requestrx')
             ->with(['inputs'=> $this->inputs])
             ->attachData($this->pdf, $this->inputs['pvd'].' - '.date('d-m-Y'),[

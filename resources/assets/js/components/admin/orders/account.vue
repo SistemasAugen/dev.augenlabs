@@ -14,7 +14,10 @@
                         <tbody>
                             <tr v-for="branch in branches" :key="branch.id">
                                 <td>{{ branch.name }}</td>
-                                <td><a :href="'/generate/account/' + branch.id" class="btn btn-info">Generar edo. cuenta <i class="fas fa-file-archive"></i></a></td>
+                                <td>
+                                    <a :href="'/generate/account/' + branch.id + '?type=credit'" class="btn btn-info">Generar (plazo) <i class="fas fa-file-archive"></i></a>
+                                    <a :href="'/generate/account/' + branch.id + '?type=cash'" class="btn btn-warning">Generar (contado) <i class="fas fa-file-archive"></i></a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

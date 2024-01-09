@@ -310,9 +310,8 @@ export default {
         finishOrder:function(id){
             const order = this.orders.filter(o => o.id == id).shift();
             
-            if (order.status != 'garantia' && order.client.status == 'Inactivo') {
-                alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
-                return false;
+            if (order.status == 'en_proceso' && order.client.status == 'Inactivo') {
+                alert('Estás dando terminado a una rx de un cliente esta bloqueado.');
             }
             alertify.confirm('¿Deseas marcar como terminado este RX?', ()=>{
                 this.$parent.inPetition=true;

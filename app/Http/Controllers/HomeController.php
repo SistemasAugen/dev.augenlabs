@@ -43,22 +43,26 @@ class HomeController extends Controller {
 		}
 	}
 
-	public function account($id) {
+	public function account($id, Request $request) {
+		$typeOfReport = $request->input('type');
 		ini_set('memory_limit',-1);
 		// Clear all export folder
 		foreach (glob(public_path('/documents/*')) as $file) {
-			if(is_file($file)){
+			if(file_exists($file)){
 			   //Use the unlink function to delete the file.
 			   unlink($file);
    			}
 		}
-		$documentstoAdd = $this->_generateReports($id);
+		$documentstoAdd = $this->_generateReports($id, $typeOfReport);
 
 		$headers = ["Content-Type" => "application/zip"];
 		$branch = Branch::findOrFail($id);
 		$branchName = $branch->name;
 		$branchName = str_replace('PDV ', '', $branchName);
-		$fileName = 'EdoCuenta_' . $branchName . date('Y-m-d') . '.zip';
+		if($typeOfReport == 'credit')
+			$fileName = 'EdoCuenta_PLAZO_' . $branchName . date('Y-m-d') . '.zip';
+		else
+			$fileName = 'EdoCuenta_CONTADO_' . $branchName . date('Y-m-d') . '.zip';
 
 		Zipper::make(public_path('/documents/' . $fileName))
 					->add($documentstoAdd)
@@ -67,7 +71,7 @@ class HomeController extends Controller {
 		return response()->download(public_path('/documents/'.$fileName),$fileName, $headers);
 	}
 
-	private function _generateReports($id) {
+	private function _generateReports($id, $typeOfReport) {
 		ini_set('memory_limit',-1);
 		$branch = Branch::findOrFail($id);
 
@@ -95,7 +99,8 @@ class HomeController extends Controller {
 			// $data = DB::table('orders');
 			// dd($data);
 			$data = [];
-			if(intval($client->payment_plan) == 0) continue;
+			if($typeOfReport == 'credit' && intval($client->payment_plan) == 0) continue;
+			if($typeOfReport == 'cash' && intval($client->payment_plan) != 0) continue;
 			$payments = Order::where("status","entregado")
                             ->where("payed", false)
 							->where('client_id', $client->id)
@@ -895,6 +900,202 @@ class HomeController extends Controller {
 		$results = DB::select(DB::raw('SELECT *, ( 3959 * acos( cos( radians(' . $lat . ') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(' . $lng . ') ) + sin( radians(' . $lat .') ) * sin( radians(latitude) ) ) ) AS distance FROM re HAVING distance < ' . $distance . ' ORDER BY distance') );
 
 		return response()->json($results);
+	}
+
+	public function wsSisavi(Request $request) {
+		if($request->has('wsdl')) {
+			header('Content-Type: application/xml');
+			echo <<<XML
+			<?xml version="1.0" encoding="UTF-8"?>
+				<definitions name="GlassesService"
+							targetNamespace="https://dev.augenlabs.com/api/ws/sisavi"
+							xmlns:tns="https://dev.augenlabs.com/api/ws/sisavi"
+							xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+							xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+							xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+							xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+							xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+					<types>
+						<xsd:schema targetNamespace="https://dev.augenlabs.com/api/ws/sisavi">
+							<xsd:element name="Envelope" type="tns:Envelope"/>
+							<xsd:element name="EnvelopeResponse" type="tns:EnvelopeResponse"/>
+							<xsd:complexType name="Envelope">
+								<xsd:sequence>
+									<xsd:element name="rx" type="xsd:int"/>
+									<xsd:element name="fecha" type="xsd:date"/>
+									<xsd:element name="cliente" type="xsd:string"/>
+									<!-- Add other elements as per your request structure -->
+								</xsd:sequence>
+							</xsd:complexType>
+							<xsd:complexType name="EnvelopeResponse">
+								<xsd:sequence>
+									<xsd:element name="order_id" type="xsd:int"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:schema>
+					</types>
+
+					<message name="GlassesRequest">
+						<part name="parameters" element="tns:Envelope"/>
+					</message>
+
+					<message name="GlassesResponse">
+						<part name="parameters" element="tns:EnvelopeResponse"/>
+					</message>
+
+					<portType name="GlassesPortType">
+						<operation name="ProcessGlasses">
+							<input message="tns:GlassesRequest"/>
+							<output message="tns:GlassesResponse"/>
+						</operation>
+					</portType>
+
+					<binding name="GlassesBinding" type="tns:GlassesPortType">
+						<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+						<operation name="ProcessGlasses">
+							<soap:operation soapAction="https://dev.augenlabs.com/api/ws/sisavi#ProcessGlasses" style="rpc"/>
+							<input>
+								<soap:body use="encoded" namespace="https://dev.augenlabs.com/api/ws/sisavi" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+							</input>
+							<output>
+								<soap:body use="encoded" namespace="https://dev.augenlabs.com/api/ws/sisavi" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+							</output>
+						</operation>
+					</binding>
+
+					<service name="GlassesService">
+						<port name="GlassesPort" binding="tns:GlassesBinding">
+							<soap:address location="https://dev.augenlabs.com/api/ws/sisavi"/>
+						</port>
+					</service>
+				</definitions>
+
+			XML;
+			die;
+		}
+
+		if ($request->isMethod('get')) {
+			abort(404);
+			die;
+		}
+		$xmlString = $request->getContent();
+				// Create a SimpleXMLElement from the XML string
+		$xmlObject = new \SimpleXMLElement($xmlString);
+
+		// Convert SimpleXMLElement to stdClass
+		$phpObject = json_decode(json_encode($xmlObject));
+
+		// Access properties of the PHP object
+		// echo $phpObject->rx; // Example access to the 'rx' property
+		// Set the content type to XML
+		header('Content-Type: application/xml');
+
+		try {
+
+			$rxFields = [
+				'rx_rx' => 'rx',
+				'rx_fecha' => 'fecha',
+				'rx_cliente' => 'cliente',
+				'rx_od_esfera' => 'od_esfera',
+				'rx_od_cilindro' => 'od_cilindro',
+				'rx_od_eje' => 'od_eje',
+				'rx_od_adicion' => 'od_adicion',
+				'rx_od_dip' => 'od_dip',
+				'rx_od_altura' => 'od_altura',
+				'rx_od_esfera_dos' => 'oi_esfera',
+				'rx_od_cilindro_dos' => 'oi_cilindro',
+				'rx_od_eje_dos' => 'oi_eje',
+				'rx_od_adicion_dos' => 'oi_adicion',
+				'rx_od_dip_dos' => 'oi_dip',
+				'rx_od_altura_dos' => 'oi_altura',
+				'rx_diseno' => 'diseno',
+				'rx_material' => 'material',
+				'rx_caracteristicas' => 'caracteristicas',
+				'rx_tipo_ar' => 'tipo_ar',
+				'rx_tallado' => 'tallado',
+				'rx_servicios' => 'servicios',
+				'rx_tipo_armazon' => 'tipo_armazon',
+				'rx_horizontal_a' => 'horizontal_a',
+				'rx_vertical_b' => 'vertical_b',
+				'rx_diagonal_ed' => 'diagonal_ed',
+				'rx_puente' => 'puente',
+				'rx_observaciones' => 'observaciones'
+			];
+
+
+			// fields validation
+			if(!isset($phpObject->tipo_armazon)) {
+				throw new \Exception("Error en el tipo de armazon", 19);
+			}
+
+			foreach(['od_esfera', 'od_cilindro', 'od_eje', 'od_adicion', 'od_dip', 'od_altura'] as $field) {
+				if(!isset($phpObject->{ $field })) {
+					throw new \Exception("Error indicador mica derecha", 14);
+				}
+			}
+
+			foreach(['oi_esfera', 'oi_cilindro', 'oi_eje', 'oi_adicion', 'oi_dip', 'oi_altura'] as $field) {
+				if(!isset($phpObject->{ $field })) {
+					throw new \Exception("Error indicador mica izquierda", 15);
+				}
+			}
+
+			if(!isset($phpObject->tipo_ar)) {
+				throw new \Exception("Error indicador de tinte", 17);
+			}
+
+			$order = new Order();
+			foreach($rxFields as $orderAttr => $xmlAttr) {
+				if(is_string($phpObject->{ $xmlAttr }))
+					$order->{ $orderAttr } = $phpObject->{ $xmlAttr };
+				else
+					$order->{ $orderAttr } = '';
+			}
+
+			$client = Client::where('name', 'SISAVI')->first();
+			$clientId = $client->id;
+		
+			$order->client_id = $clientId;
+			$order->rx = $phpObject->rx;
+
+			if(Order::where('rx', $order->rx)->exists()) {
+				throw new \Exception("Orden ya existe", 19);
+			}
+
+			$order->save();
+			$orderId = $order->id;
+
+			$response = <<<XML
+			<?xml version="1.0" encoding="UTF-8" ?>
+			<Envelope>
+				<order_id>$orderId</order_id>
+				<result>10</result>
+			</Envelope>
+			XML;
+
+		} catch(\Exception $e) {
+			$code = $e->getCode();
+			$message = $e->getMessage();
+
+			if(!in_array($code, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 70])) {
+				$code = 99;
+				$message = 'Error no definido';
+			}
+
+			$response = <<<XML
+			<?xml version="1.0" encoding="UTF-8" ?>
+			<Envelope>
+				<result>$code</result>
+				<message>$message</message>
+			</Envelope>
+			XML;
+		}
+
+	
+
+		echo $response;
+
 	}
 }
 

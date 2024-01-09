@@ -512,16 +512,16 @@ export default {
         },
         selectOrder:function(order){
             
-            if(order.status == "en_proceso"){
-                if (order.client.status == 'Inactivo') {
-                    alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
-                    return false;
-                }
-            }
             this.order=order;
             alertify.statusDialog(document.getElementById('status_table'));
         },
         changeStatus:function(status){
+            if(status == "entregado") {
+                if (this.order.client.status == 'Inactivo') {
+                    alert('Esta acción no está permitida para clientes bloqueados');
+                    return;
+                }
+            }
             alertify.confirm('¿Seguro que deseas cambiar el estatus de este RX?', ()=>{
                 this.$parent.inPetition=true;
                 let params={

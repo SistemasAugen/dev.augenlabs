@@ -82,7 +82,7 @@ class AppController extends Controller {
     }
 
     public function rxActives() {
-        $firstDayOfMonth = date('Y-08-01') . ' 00:00:00'; // hard-coded '01' for first day
+        $firstDayOfMonth = date('2023-08-01') . ' 00:00:00'; // hard-coded '01' for first day
         $lastDayOfMonth  = date('Y-m-t') . ' 23:59:59';
 
         $client = \Auth::user();
@@ -94,6 +94,8 @@ class AppController extends Controller {
              // $nOrder->client;
              $nOrder->productHas;
              $nOrder->extras;
+             $nOrder->branch;
+             $nOrder->branch->laboratory;
 
              $nOrder->description = '';
              if (isset($nOrder->product['id']))
@@ -103,6 +105,8 @@ class AppController extends Controller {
                      return $e->name;
                  }, $nOrder->extras));
              }
+
+             $nOrder->totalPrice = floatval($nOrder->total)  - floatval($nOrder->discount) - floatval($nOrder->discount_admin) + floatval($nOrder->iva);
          }
 
         return Response::set(true, null, compact('orders'));
@@ -133,6 +137,23 @@ class AppController extends Controller {
          }
 
         return Response::set(true, null, compact('orders'));
+    }
+
+    public function sendOtp(Request $request) {
+        $logoUrl = 'https://augenlabs.com/_next/static/media/Logo_Menu_Raiz.1861f2f9.svg';
+
+        // Generate a random number between 0 and 9999
+        $randomNumber = mt_rand(0, 999999);
+
+        // Pad with zeros to ensure it's a 4-digit number
+        $loginCode = str_pad($randomNumber, 6, '0', STR_PAD_LEFT);
+
+
+        \Mail::send('emails.login_code', ['logoUrl' => $logoUrl, 'loginCode' => $loginCode], function ($message) {
+            $message->to('sistemas@augenlabs.com')->subject('Tu código de acceso');
+        });
+
+        return Response::set(true, 'Correo OTP enviado');
     }
 
     public function notFound() {

@@ -8,6 +8,7 @@ Route::group(['prefix' => 'v2'], function() {
 	Route::group(['middleware' => ['cors']], function () {
 		Route::get('', 'AppController@index');
         Route::post('login', 'AppController@login');
+		Route::post('send-otp', 'AppController@sendOtp');
         Route::group(['middleware' => 'jwt.auth'], function () {
             Route::get('rx/actives', 'AppController@rxActives');
             Route::get('rx/pendings', 'AppController@rxPendings');
@@ -151,3 +152,7 @@ Route::middleware(["jwt.auth"])->group(function() {
 
 	
 });
+
+
+Route::get('/ws/sisavi', 'HomeController@wsSisavi');
+Route::post('/ws/sisavi', 'HomeController@wsSisavi');

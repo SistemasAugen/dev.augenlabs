@@ -437,7 +437,7 @@ export default {
                         })
             } else {
 
-                if (this.order.status != 'garantia' && this.order.client.status == 'Inactivo') {
+                if (this.order.status != 'garantia' && status == 'entregado' && this.order.client.status == 'Inactivo') {
                     alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
                     alertify.closeAll();
                     return false;

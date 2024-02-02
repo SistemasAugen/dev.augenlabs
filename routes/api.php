@@ -12,6 +12,12 @@ Route::group(['prefix' => 'v2'], function() {
         Route::group(['middleware' => 'jwt.auth'], function () {
             Route::get('rx/actives', 'AppController@rxActives');
             Route::get('rx/pendings', 'AppController@rxPendings');
+            Route::post('rx/request', 'AppController@rxRequest');
+			Route::get('rx/week_periods', 'AppController@getPeriods');
+			Route::post('rx/load_period', 'AppController@getPeriod');
+			Route::get('products', 'AppController@products');
+			Route::get('types', 'AppController@types');
+			Route::get('subcategories/{id}', 'AppController@subcategories');
         });
 	});
 });

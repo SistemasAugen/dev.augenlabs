@@ -59,7 +59,7 @@
             Le recordamos que el número de cuenta donde debe realizar la transferencia es:
             <br/>
             <br/>
-            <b>INNOVACION EN OPTICA APLICADA <br/> BANORTE</b>
+            <b>INNOVACION EN OPTICA APLICADA SAPI DE CV <br/> BANORTE</b>
             <p>Clabe Interbancaria: <b>072 320 01027637749 8</b> </p>
             <p>Cuenta: <b></b> 1027637749</p>
         </td>

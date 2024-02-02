@@ -996,6 +996,7 @@ class HomeController extends Controller {
 			$rxFields = [
 				'rx_rx' => 'rx',
 				'rx_fecha' => 'fecha',
+				'client_id' => 'id_cliente',
 				'rx_cliente' => 'cliente',
 				'rx_od_esfera' => 'od_esfera',
 				'rx_od_cilindro' => 'od_cilindro',
@@ -1053,10 +1054,21 @@ class HomeController extends Controller {
 					$order->{ $orderAttr } = '';
 			}
 
-			$client = Client::where('name', 'SISAVI')->first();
-			$clientId = $client->id;
+			$metadata = [
+				'oi_posicion_prisma' => is_string($phpObject->oi_posicion_prisma) ? $phpObject->oi_posicion_prisma : '',
+				'od_posicion_prisma' => is_string($phpObject->od_posicion_prisma) ? $phpObject->od_posicion_prisma : '',
+				'oi_grado_prisma' => is_string($phpObject->oi_grado_prisma) ? $phpObject->oi_grado_prisma : '',
+				'od_grado_prisma' => is_string($phpObject->od_grado_prisma) ? $phpObject->od_grado_prisma : '',
+				'b_mica_derecha' => is_string($phpObject->b_mica_derecha) ? $phpObject->b_mica_derecha : '',
+				'b_mica_izquierda' => is_string($phpObject->b_mica_izquierda) ? $phpObject->b_mica_izquierda : '',
+			];
+
+			$order->metadata = json_encode($metadata);
+
+			// $client = Client::findOrFail->first();
+			// $clientId = $client->id;
 		
-			$order->client_id = $clientId;
+			// $order->client_id = $clientId;
 			$order->rx = $phpObject->rx;
 
 			if(Order::where('rx', $order->rx)->exists()) {
@@ -1080,7 +1092,7 @@ class HomeController extends Controller {
 
 			if(!in_array($code, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 70])) {
 				$code = 99;
-				$message = 'Error no definido';
+				// $message = 'Error no definido';
 			}
 
 			$response = <<<XML

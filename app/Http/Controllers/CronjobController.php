@@ -105,10 +105,19 @@ class CronjobController extends Controller {
     }
 
     public function warrantyReport() {
-        $filename   = "GARANTIAS SEMANA " . date('W') . " " . date('Y') . ".xlsx";
-        $attachment = Excel::raw(new WarrantyExport, BaseExcel::XLSX);
-        $title      = "GARANTIAS SEMANA " . date('W') . " " . date('Y');
+          // Check if today is Monday
+        if (date('N') == 1) {
+            $filename = "GARANTIAS SEMANA " . date('W') . " " . date('Y') . ".xlsx";
+            $title = "GARANTIAS SEMANA " . date('W') . " " . date('Y');
+        } else {
+            // For days other than Monday, use the date of the day before
+            $yesterday = date('dmY', strtotime('-1 day'));
+            $filename = "GARANTIAS " . $yesterday . ".xlsx";
+            $title = "GARANTIAS " . $yesterday;
+        }
 
+        $attachment = Excel::raw(new WarrantyExport, BaseExcel::XLSX);
+        
         Mail::send('emails.warranty_report', compact('title'), function($m) use ($filename, $attachment) {
             $m->from('contacto@augenlabs.com', 'Augen Labs');
 

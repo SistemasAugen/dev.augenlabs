@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use JWTAuth;
 
 use App\Client;
@@ -14,10 +15,17 @@ use App\Type;
 use App\ProductHasSubcategory;
 use App\Subcategory;
 use App\Branch;
+use App\Laboratory;
 use App\Purchase;
 use App\Notification;
 use App\User;
 use Carbon\Carbon;
+use Mail;
+use PDF;
+
+
+use Illuminate\Support\Facades\Storage;
+use App\Mail\RequestRx;
 
 class AppController extends Controller {
     protected $ttl = 60;
@@ -38,17 +46,26 @@ class AppController extends Controller {
         try {
             $credentials = $request->all();
             $client = Client::where('email', $credentials['email'])
-                            ->orWhere('id', $credentials['email'])
                             ->first();
 
             if(is_null($client))
                 return response()->json(Response::set(false, 'Usuario y/o contraseña incorrecto'), 401);
 
-            if(!\Hash::check($credentials['password'], $client->password))
-                return response()->json(Response::set(false, 'Usuario y/o contraseña incorrecto'), 401);
+            // if(!\Hash::check($credentials['password'], $client->password))
+            //     return response()->json(Response::set(false, 'Usuario y/o contraseña incorrecto'), 401);
 
             if($client->status != 'Activo')
                 return response()->json(Response::set(false, 'Usuario Inactivo'), 401);
+        
+            $cachedOtp = Cache::get('otp_' . $credentials['email']);
+
+            if (!$cachedOtp || $cachedOtp != $request->code) {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'El código proporcionado es inválido o ya expiró',
+                    'data'      => null
+                ], 403);
+            }
 
             try {
                 if(!$token = JWTAuth::fromUser($client)) {
@@ -83,6 +100,8 @@ class AppController extends Controller {
                 ], 500);
 
             }
+
+            Cache::forget('otp_' . $request->email);
 
             $ttl = $this->ttl;
             return Response::set(true, 'Bienvenido ' . $client->name, compact('token', 'ttl', 'client'));
@@ -150,6 +169,7 @@ class AppController extends Controller {
     }
 
     public function sendOtp(Request $request) {
+        $email = $request->input('email');
         $logoUrl = 'https://augenlabs.com/_next/static/media/Logo_Menu_Raiz.1861f2f9.svg';
 
         // Generate a random number between 0 and 9999
@@ -158,12 +178,14 @@ class AppController extends Controller {
         // Pad with zeros to ensure it's a 4-digit number
         $loginCode = str_pad($randomNumber, 6, '0', STR_PAD_LEFT);
 
+        // Store OTP in cache. Here, 'email' is used as part of the key to uniquely identify the OTP for the user.
+        Cache::put('otp_'. $email, $loginCode, now()->addMinutes(5)); // OTP expires in 5 minutes
 
-        \Mail::send('emails.login_code', ['logoUrl' => $logoUrl, 'loginCode' => $loginCode], function ($message) {
-            $message->to('sistemas@augenlabs.com')->subject('Tu código de acceso');
-        });
+        /* \Mail::send('emails.login_code', ['logoUrl' => $logoUrl, 'loginCode' => $loginCode], function ($message) {
+            $message->to(['edgar.desarrollo@gmail.com', 'sistemas@augenlabs.com'])->subject('Tu código de acceso');
+        }); */
 
-        return Response::set(true, 'Correo OTP enviado');
+        return Response::set(true, 'Correo OTP enviado', compact('loginCode'));
     }
 
     public function products() {
@@ -198,12 +220,13 @@ class AppController extends Controller {
         $branch = Branch::find($client->branch_id);
 
         $value = $request->all();
+        $value['rx_rx'] = str_replace("_", "", $value['rx_rx']); // Remove all undescores for the front mask
         $value['product_has_subcategory_id'] = $phs->id;
         $value['rx_material'] = $subcategory->name;
         $value['discount'] = 0;
         $value['service'] = 0;
         $value['total'] = $phs->price;
-        $value['iva'] = $phs->price / 1.16;
+        $value['iva'] = number_format($phs->price / 1.16, 2);
         $value['rx'] = $value['rx_rx'];
 
         $order = new Order(array(
@@ -251,15 +274,19 @@ class AppController extends Controller {
             "rx_vertical_b" => isset($value['rx_vertical_b']) ? $value['rx_vertical_b'] : null,
             "rx_diagonal_ed" => isset($value['rx_diagonal_ed']) ? $value['rx_diagonal_ed'] : null,
             "rx_puente" => isset($value['rx_puente']) ? $value['rx_puente'] : null,
-            "rx_observaciones" => isset($value['rx_observaciones']) ? $value['rx_observaciones'] : null,
+            "rx_observaciones" => isset($value['rx_observaciones']) ? $value['rx_observaciones'] : '',
             
         ));
 
         // $order->save();
 
+        $order->branch;
+        $order->branch->laboratory;
+        $order->productHas;
+
         $notification = new Notification();
-        $notification->text = 'Una RX receta ha sido solicitada';
-        $notification->type = 'primary';
+        $notification->text = 'RX ' . $order->rx . ' - Solicitud desde el portal';
+        $notification->type = 'rx';
         // $notification->icon = 'primary';
         
         $user = User::where('laboratory_id', $branch->laboratory_id)
@@ -275,58 +302,79 @@ class AppController extends Controller {
     }
 
     public function getPeriods() {
-        $firstDayOfMonth = date('2023-08-01') . ' 00:00:00'; // hard-coded '01' for first day
-        $lastDayOfMonth  = date('Y-m-t') . ' 23:59:59';
+        // $firstDayOfMonth = date('2023-08-01') . ' 00:00:00'; // hard-coded '01' for first day
+        // $lastDayOfMonth  = date('Y-m-t') . ' 23:59:59';
 
-        $client = \Auth::user();
-        $orders = $client->orders()
-                         ->whereBetween('created_at', [ $firstDayOfMonth, $lastDayOfMonth ])
-                         ->get();
+        // $client = \Auth::user();
+        // $orders = $client->orders()
+        //                  ->whereBetween('created_at', [ $firstDayOfMonth, $lastDayOfMonth ])
+        //                  ->get();
 
-        foreach ($orders as &$nOrder) {
-             // $nOrder->client;
-             $nOrder->productHas;
-             $nOrder->extras;
+        // foreach ($orders as &$nOrder) {
+        //      // $nOrder->client;
+        //      $nOrder->productHas;
+        //      $nOrder->extras;
 
-             $nOrder->description = '';
-             if (isset($nOrder->product['id']))
-                 $nOrder->description .= $nOrder->product['name'] . ', ' . $nOrder->product['subcategory_name'] . ', ' .  $nOrder->product['type_name'];
-             if (is_array($nOrder->extras) && count($nOrder->extras) > 0) {
-                 $nOrder->description .= @implode(', ', array_map(function($e) {
-                     return $e->name;
-                 }, $nOrder->extras));
-             }
+        //      $nOrder->description = '';
+        //      if (isset($nOrder->product['id']))
+        //          $nOrder->description .= $nOrder->product['name'] . ', ' . $nOrder->product['subcategory_name'] . ', ' .  $nOrder->product['type_name'];
+        //      if (is_array($nOrder->extras) && count($nOrder->extras) > 0) {
+        //          $nOrder->description .= @implode(', ', array_map(function($e) {
+        //              return $e->name;
+        //          }, $nOrder->extras));
+        //      }
 
-             $nOrder->totalPrice = floatval($nOrder->total)  - floatval($nOrder->discount) - floatval($nOrder->discount_admin) + floatval($nOrder->iva);
-        }
+        //      $nOrder->totalPrice = floatval($nOrder->total)  - floatval($nOrder->discount) - floatval($nOrder->discount_admin) + floatval($nOrder->iva);
+        // }
 
-        $orders = $orders->toArray();
+        // $orders = $orders->toArray();
 
-        $groupedOrders = collect($orders)->map(function ($order) {
-            $date = Carbon::parse($order['created_at']);
-            $weekStart = $date->startOfWeek()->format('Y-m-d'); // Monday
-            $weekEnd = $date->endOfWeek()->subDays(1)->format('Y-m-d'); // Saturday
-            $weekNumber = $date->weekOfYear;
-            $year = $date->year;
+        // $groupedOrders = collect($orders)->map(function ($order) {
+        //     $date = Carbon::parse($order['created_at']);
+        //     $weekStart = $date->startOfWeek()->format('Y-m-d'); // Monday
+        //     $weekEnd = $date->endOfWeek()->subDays(1)->format('Y-m-d'); // Saturday
+        //     $weekNumber = $date->weekOfYear;
+        //     $year = $date->year;
         
-            return [
+        //     return [
+        //         'id' => uniqid(),
+        //         'name' => "Semana {$weekNumber} {$year}",
+        //         'start_date' => $weekStart,
+        //         'end_date' => $weekEnd,
+        //         // 'order' => $order
+        //     ];
+        // })->unique('name'); // Ensure only one record per week
+            
+        // Set Carbon's locale to Spanish to use for day and month names
+        setlocale(LC_TIME, 'es_ES.UTF-8', 'Spanish_Spain', 'Spanish');
+
+        $date = Carbon::now();
+
+        // Using format() with %d (day of the month), %B (full month name)
+        $weekStart = strftime('%d de %B', $date->startOfWeek()->timestamp); // e.g., "02 de Junio"
+        $weekEnd = strftime('%d de %B', $date->endOfWeek()->subDays(1)->timestamp); // e.g., "09 de Junio"
+        $weekNumber = $date->weekOfYear;
+        $year = $date->year;
+
+        $result = [
+            [
                 'id' => uniqid(),
                 'name' => "Semana {$weekNumber} {$year}",
                 'start_date' => $weekStart,
-                'end_date' => $weekEnd,
-                // 'order' => $order
-            ];
-        })->unique('name'); // Ensure only one record per week
-        
-        $result = $groupedOrders->values()->all();
+                'end_date' => $weekEnd
+            ]
+        ];
 
         return Response::set(true, 'RX Creada correctamente', $result);
     }
 
     public function getPeriod(Request $request) {
+        $firstDayOfMonth = date('2023-08-01') . ' 00:00:00'; // hard-coded '01' for first day
+        $lastDayOfMonth  = date('Y-m-t') . ' 23:59:59';
+
         $client = \Auth::user();
         $orders = $client->orders()
-                         ->whereBetween('created_at', [ $request->input('start_date'), $request->input('end_date') ])
+                         ->whereBetween('created_at', [  $firstDayOfMonth, $lastDayOfMonth ])
                          ->get();
 
         foreach ($orders as &$nOrder) {
@@ -343,10 +391,62 @@ class AppController extends Controller {
                  }, $nOrder->extras));
              }
 
+             $nOrder->selected = 1;
              $nOrder->totalPrice = floatval($nOrder->total)  - floatval($nOrder->discount) - floatval($nOrder->discount_admin) + floatval($nOrder->iva);
         }
 
         return Response::set(true, null, compact('orders'));
+    }
+
+    public function rxApprove($id) {
+        $notification = Notification::findOrFail($id);
+
+        $data = $notification->metadata;
+        $data = json_decode($data, true);
+
+        $order = new Order();
+        foreach($data as $attr => $value) {
+            if(in_array($attr, ['passed', 'cont_dias']))
+                continue;
+            if(is_string($value) || is_numeric($value) ) {
+                $order->{ $attr } = $value;
+            }
+        }
+
+        $order->save();
+        $notification->delete();
+
+        $branch = Branch::find($order->branch_id);
+        $laboratory = Laboratory::findOrFail($order->laboratory_id);
+        
+        $data = $order->toArray();
+        $data['pvd'] = $branch->name;
+        $data['laboratory'] = $laboratory->name;
+
+        $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
+        $content = $pdf->download()->getOriginalContent();
+            // Crear el archivo y almacenarlo en el storage
+        Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);
+        
+        $mapLabs = [
+            1 => 'americas',
+            2 => 'ens',
+            3 => 'chap',
+            4 => 'mty',
+            5 => 'pue',
+            6 => 'slp'
+        ];
+        
+        if(in_array($data['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
+            // $cc = 'captura' . $mapLabs[$value['laboratory_id']] . '@augenlabs.com';
+            Mail::to('sistemas@augenlabs.com')
+            // ->cc($cc)
+            ->send(new RequestRx($data, $content, 'CAPTURA'));
+        } else {
+            Mail::to('sistemas@augenlabs.com')->send(new RequestRx($data, $content, 'CAPTURA'));
+        }
+
+        return Response::set(true, 'RX Creada correctamente', compact('order'));
     }
 
     public function notFound() {

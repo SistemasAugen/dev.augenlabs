@@ -634,6 +634,47 @@
         </table>
         <small>*Precios sin I.V.A.</small>
       </div>
+
+      <div id="new_products_table">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th v-for="currentMaterial in type.materials" :style="'text-align: center;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'" :colspan="Math.min(1, currentMaterial.material.characteristics.length)">
+                        {{ currentMaterial.material.name }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                  <tr>
+                    <td style="background-color: #f5f5f6; border: 0 !important;"></td>
+                    <template v-for="(currentMaterial, idj) in type.materials">
+                      <template v-for="(currentCharacteristic, idx) in currentMaterial.material.characteristics">
+                        <td :style="'width: 100px;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'">
+                          <select class="form-control" @change="handleAddChar(currentMaterial, idx, $event)" v-if="!currentCharacteristic.characteristic_id" style="width: 150px;">
+                              <option hidden selected disabled>Selecciona una característica</option>
+                              <option v-for="characteristic in characteristics" :value="characteristic.id">{{ characteristic.name }}</option>
+                          </select>
+                          <span v-else>{{ currentCharacteristic.characteristic.name }} <button class="btn btn-danger" @click="removeChar(currentMaterial, idj)" v-if="isEditing"><i class="fa fa-trash"></i></button></span>
+                        </td>
+                      </template>
+                     
+                    </template>
+                  </tr>
+                  <tr>
+                    <td>{{ type.name }}</td>
+                    <template v-for="currentMaterial in type.materials">
+                      <template v-for="currentCharacteristic in currentMaterial.material.characteristics">
+                        <td style="width: 100px;">
+                            <span  class="form-control" v-if="currentCharacteristic.price > 0">{{  currentCharacteristic.price | currency }}</span>
+                            <span  class="form-control" v-else>-</span>
+                        </td>
+                      </template>
+                    </template>
+                  </tr>
+            </tbody>
+          </table>
+      </div>
     </div>
 
    
@@ -1138,7 +1179,7 @@ export default {
     getTypes: function () {
       this.$parent.inPetition = true;
       axios
-        .get(tools.url("/api/types"))
+        .get(tools.url("/api/types") + ('id' in this.client ? '?client_id=' + this.client.id : ''))
         .then((response) => {
           let types = response.data;
           const CHAPULTEPEC_LAB = 46;
@@ -1309,10 +1350,16 @@ export default {
       }
     },
     selectProduct: function (type) {
-      this.getSubcategories(type.id);
-      this.getProducts(type.id);
-      this.type = type;
-      alertify.productsDialog(document.getElementById("products_table"));
+
+      if('isNew' in type && type.isNew) {
+        this.type = type;
+        alertify.productsDialog(document.getElementById("new_products_table"));
+      } else {
+        this.getSubcategories(type.id);
+        this.getProducts(type.id);
+        this.type = type;
+        alertify.productsDialog(document.getElementById("products_table"));
+      }
     },
     getDiscounts: function (event) {
       // if('target' in event) {

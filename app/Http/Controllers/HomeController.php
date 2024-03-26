@@ -14,6 +14,10 @@ use App\Branch;
 use App\Order;
 use App\Client;
 use App\User;
+use App\Category;
+use App\Product;
+use App\Purchase;
+use App\ProductHasSubcategory;
 use Zipper;
 use Excel;
 use PDF;
@@ -570,7 +574,7 @@ class HomeController extends Controller {
             return -intval(ceil($first->diff($second)->days/7)) + 1;
 	}
 
-	public function accountClient($id) {
+	public function accountClient($id, Request $request) {
 		ini_set('memory_limit',-1);
 		$client = Client::findOrFail($id);
 		$clientName = $client->name;
@@ -579,10 +583,19 @@ class HomeController extends Controller {
 		$fileName = $client->id . '-' . $clientName . '.xlsx';
 		$data = [];
 
-		$payments = Order::where("status","entregado")
-						->where("payed", false)
-						->where('client_id', $client->id)
-						->get();
+
+		if($request->has('ids')) {
+			$idsParam = $request->query('ids');
+			$ids = explode(',', $idsParam);
+
+			$payments = Order::whereIn('id', $ids)
+							 ->get();
+		} else {
+			$payments = Order::where("status","entregado")
+							->where("payed", false)
+							->where('client_id', $client->id)
+							->get();
+		}
 
 		foreach ($payments as $order) {
 			$order->productHas;
@@ -1065,7 +1078,7 @@ class HomeController extends Controller {
 
 			$order->metadata = json_encode($metadata);
 
-			// $client = Client::findOrFail->first();
+			$client = Client::findOrFail($order->client_id);
 			// $clientId = $client->id;
 		
 			// $order->client_id = $clientId;
@@ -1074,6 +1087,49 @@ class HomeController extends Controller {
 			if(Order::where('rx', $order->rx)->exists()) {
 				throw new \Exception("Orden ya existe", 19);
 			}
+
+			define('TYPE_ID', 15);
+			$category = $this->_mapMaterial($xmlObject->material->__toString());
+			if(is_null($category))
+				throw new \Exception("El material enviado no pudo ser encontrado", 99);
+
+			$product = $this->_mapDiseno($xmlObject->diseno->__toString(), TYPE_ID);
+			if(is_null($product))
+				throw new \Exception("El diseño enviado no pudo ser encontrado", 99);
+			
+			$characteristicName = $this->_mapExtra($xmlObject->diseno->__toString(), $xmlObject->material->__toString());
+			if(is_null($characteristicName))
+				throw new \Exception("Valores inválidos", 99);
+
+			$subcaregory = $category->subcategories->where('name', $characteristicName)->first();
+			$phs = ProductHasSubcategory::where('product_id', $product->id)
+										->where('subcategory_id', $subcaregory->id)
+										->where('category_id', $category->id)
+										->where('type_id', TYPE_ID)
+										->where('cost', '>', 0)
+										->where('price', '>', 0)
+										->orderBy('created_at', 'DESC')
+										->first();
+
+			if(is_null($phs))
+				throw new \Exception("Valores inválidos", 99);
+			
+			$purchase = new Purchase(array(
+				"user_id" => 0,
+				"client_id" => $order->client_id,
+				"total" => $phs->price,
+				"description"=> 'Order generada via WS /// SISAVI'
+			));
+			$purchase->save();
+
+			$order->purchase_id = $purchase->id;
+			$order->product_has_subcategory_id = $phs->id;
+			$order->price = $phs->price;
+			$order->service = 0;
+			$order->total = $phs->price;
+			$order->iva = round($phs->price / 1.16, 2);
+			$order->branch_id = $client->branch_id;
+			$order->laboratory_id = $client->branch->laboratory->id;
 
 			$order->save();
 			$orderId = $order->id;
@@ -1108,6 +1164,144 @@ class HomeController extends Controller {
 
 		echo $response;
 
+	}
+
+	private function _mapDiseno($param, $type_id) {
+		$disenoMap = [
+			"Trinity DG" => "PROGRESIVO AL CENTURY",
+			"Trinity FF" => "PROGRESIVO FF CENTURY",
+			"V.S. Digital - Au" => "MONOFOCAL CENTURY",
+			"V.S. Digital + AR - Au" => "MONOFOCAL CENTURY",
+			"Flat Top 28 Digital - Au" => "FLAT TOP CENTURY",
+			"Flat Top 28 Digital + AR - Au" => "FLAT TOP CENTURY",
+			"Invisible - Au" => "INVISIBLE CENTURY",
+		];
+
+		if(!isset($disenoMap[$param]))
+			return null;
+
+		$name = $disenoMap[$param];
+		$product = Product::where('name', $name)
+						 ->where('type_id', $type_id)
+						 ->first();
+
+		return $product;
+	}
+
+	private function _mapMaterial($param) {
+		$materialsMap = [
+			"Cr-39 Digital" => "RESINA ÓPTICA CR-39",
+			"Alto Indice 1.56 Digital" => "ALTO ÍNDICE 1.56",
+			"Cr-39 Parasol Digital" => "PARASOL FOTOCROMÁTICO",
+			"Trivex Digital" => "TRIVEX",
+			"B-block" => "B-BLOCK",
+			"Cr-39 Free Form" => "RESINA ÓPTICA CR-39",
+			"Cr-39 Polarizado Cafe Free Form" => "POLARIZADO",
+			"Cr-39 Polarizado Verde Free Form" => "POLARIZADO",
+			"Cr-39 Parasol Free Form" => "PARASOL FOTOCROMÁTICO",
+			"Cr-39 Polarizado Gris Free Form" => "POLARIZADO",
+			"Trivex Free Form" => "TRIVEX",
+			"Trivex Parasol Free Form" => "TRIVEX PARASOL",
+			"Trivex 1.60 Free Form" => "TRIVEX 1.60",
+			"MR10" => "ALTAS GRADUACIONES",
+			"Alto Indice 1.56 Free Form" => "ALTO ÍNDICE 1.56",
+			"Cr-39 Digital + AR" => "RESINA ÓPTICA CR-39",
+			"Cr-39 Polarizado Gris Digital" => "POLARIZADO",
+			"Cr-39 Polarizado cafe Digital" => "POLARIZADO",
+			"Trivex Digital + AR" => "TRIVEX",
+			"Trivex Parasol Digital" => "TRIVEX PARASOL",
+			"Trivex 1.60 Digital" => "TRIVEX 1.60",
+			"Alto Indice 1.56 Digital + AR" => "ALTO ÍNDICE 1.56",
+			"Cr-39 Parasol Digital + AR" => "PARASOL FOTOCROMÁTICO",
+			"MR10 + AR" => "ALTAS GRADUACIONES",
+			"B-block digital + AR Azul" => "B-BLOCK",
+			"Trivex Digital 1.60 + AR" => "TRIVEX 1.60",
+			"Trivex Parasol Digital + AR" => "TRIVEX PARASOL",
+			"Cr-39 Polarizado Digital + AR" => "POLARIZADO",
+		];
+
+		if(!isset($materialsMap[$param]))
+			return null;
+
+		$name = $materialsMap[$param];
+		$category = Category::where('name', $name)->first();
+
+		return $category;
+	}
+
+	private function _mapExtra($diseno, $material) {
+		$caracteristicasMap = [
+			"Trinity DG" => [
+				"Cr-39 Digital" => "Blanco",
+				"Alto Indice 1.56 Digital" => "Blanco",
+				"Cr-39 Parasol Digital" => "Blanco",
+				"Trivex Digital" => "Blanco",
+			],
+			"Trinity FF" => [
+				"B-block" => "Free Form + Ar Azul",
+				"Cr-39 Free Form" => "Free Form + AR",
+				"Cr-39 Polarizado Cafe Free Form" => "Free Form Blanco",
+				"Cr-39 Polarizado Verde Free Form" => "Free Form Blanco",
+				"Cr-39 Parasol Free Form" => "Free Form Blanco",
+				"Cr-39 Polarizado Gris Free Form" => "Free Form Blanco",
+				"Trivex Free Form" => "Free Form Blanco",
+				"Trivex Parasol Free Form" => "Free Form Blanco",
+				"Trivex 1.60 Free Form" => "Free Form Blanco",
+				"MR10" => "Free Form Blanco",
+				"Alto Indice 1.56 Free Form" => "Free Form Blanco",
+			],
+			"V.S. Digital - Au" => [
+				"Cr-39 Digital" => "Blanco",
+				"MR10" => "",
+				"Cr-39 Parasol Digital" => "Blanco",
+				"Cr-39 Polarizado Gris Digital" => "Blanco",
+				"Cr-39 Polarizado cafe Digital" => "Blanco",
+				"Trivex Digital" => "Blanco",
+				"Trivex Parasol Digital" => "Blanco",
+				"Trivex 1.60 Digital" => "Blanco",
+				"Alto Indice 1.56 Digital" => "Blanco",
+			],
+			"V.S. Digital + AR - Au" => [
+				"Cr-39 Digital + AR" => "HD + AR",
+				"Trivex Digital + AR" => "Augen Lens + AR",
+				"Alto Indice 1.56 Digital + AR" => "HD + AR",
+				"B-block digital + AR Azul" => "Augen Lens + AR Azul",
+				"Cr-39 Parasol Digital + AR" => "Augen Lens + AR",
+				"Trivex Digital 1.60 + AR" => "Augen Lens + AR",
+				"Trivex Parasol Digital + AR" => "Augen Lens + AR",
+				"Cr-39 Polarizado Digital + AR" => "Augen Lens + AR",
+				"MR10 + AR" => "Augen Lens + AR",
+			],
+			"Flat Top 28 Digital - Au" => [
+				"Cr-39 Digital" => "Blanco",
+				"Cr-39 Parasol Digital" => "Blanco",
+				"Trivex Digital" => "Blanco",
+				"Alto Indice 1.56 Digital" => "Blanco",
+				"MR10" => "Blanco",
+			],
+			"Flat Top 28 Digital + AR - Au" => [
+				"Cr-39 Parasol Digital + AR" => "Augen Lens + AR",
+				"MR10 + AR" => "Augen Lens + AR",
+				"Trivex Digital + AR" => "Augen Lens + AR",
+				"Cr-39 Digital + AR" => "HD + AR",
+				"Alto Indice 1.56 Digital + AR" => "HD + AR",
+			],
+			"Invisible - Au" => [
+				"Cr-39 Digital" => "",
+				"Cr-39 Digital + AR" => "HD + AR",
+			],
+		];
+
+		$caracteristica = $caracteristicasMap[$diseno][$material] ?? null;
+
+		return $caracteristica;
+	}
+
+	public function rxGenerationPDF() {
+		$pdf = PDF::loadView('pdf.recipe', []);
+		
+		return $pdf->setPaper('A5')->stream();
+		// return view('pdf.recipe');
 	}
 }
 

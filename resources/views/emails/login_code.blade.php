@@ -42,6 +42,8 @@
       <p><strong>{{ $loginCode }}</strong></p>
       <p>Por favor regresa al log in e inserta el código de arriba para verificar tu identidad.</p>
       <p>Si no solicitaste este código, puedes ignorar este mensaje.</p>
+      <br/>
+      <p>Este código expira en 5 minutos.</p>
     </div>
     
     <!-- Footer -->

@@ -699,7 +699,13 @@ class OrdersController extends Controller
     public function payments(Request $request, $branch_id = null)
     {
         ini_set('memory_limit',-1);
-        $user=Auth::user();
+        $user = Auth::user();
+        $email = $user->email;
+
+        if ($email != 'cobranzacorp@augenlabs.com' && $email != 'jcsosa@augenlabs.com') {
+            return response()->json(['error' => 'No tienes acceso a este módulo'], 403);
+        }
+
         // $start=$request->start;
         // $end=$request->end;
         // $start=date("Y-m-d H:i:s",strtotime($start." 00:00:00"));
@@ -717,6 +723,7 @@ class OrdersController extends Controller
                                // ->where("created_at",">=",$start)
                                // ->where("created_at","<=",$end)
                                ->where("status","like","entregado")
+                               ->where("status","like","terminado")
                                ->where("payed",false);
                 if($isLiverpool) {
                     $clients = Client::where('name', 'LIKE', 'LIVERPOOL%')

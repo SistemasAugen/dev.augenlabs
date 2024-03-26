@@ -16,12 +16,19 @@ class WarrantyExport implements FromCollection, WithHeadings, WithTitle, ShouldA
         $timestamp = time();
         $dayOfTheWeek = date('N', $timestamp);
 
-        $sundayTs = $timestamp + ( 7 - $dayOfTheWeek) * 24 * 60 * 60;
-        $mondayTs = $timestamp - ( $dayOfTheWeek - 1) * 24 * 60 * 60;
-
-        $startDate  = date('Y-m-d', $mondayTs - 1 * 7 * 24 * 60 * 60) . ' 00:00:00';
-        $endDate    = date('Y-m-d', $sundayTs - 1 * 7 * 24 * 60 * 60) . ' 23:59:59';
-
+        if ($dayOfTheWeek == 1) { // If today is Monday
+            $sundayTs = $timestamp + (7 - $dayOfTheWeek) * 24 * 60 * 60;
+            $mondayTs = $timestamp - ($dayOfTheWeek - 1) * 24 * 60 * 60;
+    
+            // Use the previous week's Monday to Sunday as the date range
+            $startDate = date('Y-m-d', $mondayTs - 1 * 7 * 24 * 60 * 60) . ' 00:00:00';
+            $endDate = date('Y-m-d', $sundayTs - 1 * 7 * 24 * 60 * 60) . ' 23:59:59';
+        } else { // For other days, set startDate and endDate to yesterday's date
+            $yesterday = date('Y-m-d', strtotime('-1 day', $timestamp));
+            $startDate = $yesterday . ' 00:00:00';
+            $endDate = $yesterday . ' 23:59:59';
+        }
+        
         return DB::table('orders_log')
                  ->join('orders', 'orders.id', '=', 'orders_log.order_id')
                  ->join('clients', 'clients.id', '=', 'orders.client_id')

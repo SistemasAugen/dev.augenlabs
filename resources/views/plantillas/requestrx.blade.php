@@ -245,7 +245,7 @@
     <div class="form-group">
 
 		<div class="col-sm-12" style="">
-			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_observaciones'] }}</p></div>
+			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ @$inputs['rx_observaciones'] ?: '' }}</p></div>
 		</div>
     </div>
 

@@ -228,6 +228,10 @@ class ClientsController extends Controller {
         if(isset($request->password)){
             $client->password = Hash::make($request->password);
         }
+
+        if($request->has('is_safilo')) {
+            $client->is_safilo = $request->is_safilo; 
+        }
         
         $client->save();
 

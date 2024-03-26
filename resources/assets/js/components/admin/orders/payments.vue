@@ -375,7 +375,12 @@ export default {
                 this.$parent.inPetition=false;
             })
             .catch(err=>{
-                this.$parent.handleErrors(err);
+                if (err.response && err.response.status === 403) {
+                    this.$parent.showMessage(response.data.msg, "success");
+                    console.log("Custom error message: No tienes acceso a este módulo");
+                } else {
+                    this.$parent.handleErrors(err);
+                }
                 this.$parent.inPetition=false;
             });
         },

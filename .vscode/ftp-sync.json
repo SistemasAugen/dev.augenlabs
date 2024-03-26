@@ -20,9 +20,7 @@
     ],
     "generatedFiles": {
         "uploadOnSave": true,
-        "extensionsToInclude": [
-            ""
-        ],
+        "extensionsToInclude": [ ],
         "path": ""
     }
 }

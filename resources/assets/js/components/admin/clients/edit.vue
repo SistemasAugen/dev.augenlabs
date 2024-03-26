@@ -47,6 +47,8 @@
 										<input-form name="contacto_email" text="Correo de contacto" :data.sync="client.contact_email" validate="email"></input-form>
 										<input-form name="contacto_telefono" text="Teléfono de contacto" :data.sync="client.contact_phone"></input-form>
 										<input-form name="contacto_celular" text="Origen del cliente" :data.sync="client.contact_celphone"></input-form>
+										<hr/>
+										<checkbox-form text="Cliente SAFILO" :data.sync="client.is_safilo" value="1" name="is_safilo" key="is_safilo"></checkbox-form>
 									</div>
 									<div class="tab-pane" id="v-discounts">
 										<div class="row">

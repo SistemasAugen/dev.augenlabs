@@ -13,6 +13,8 @@ Route::group(['prefix' => 'v2'], function() {
             Route::get('rx/actives', 'AppController@rxActives');
             Route::get('rx/pendings', 'AppController@rxPendings');
             Route::post('rx/request', 'AppController@rxRequest');
+            Route::post('rx/approve/{id}', 'AppController@rxApprove');
+            Route::post('rx/reject/{id}', 'AppController@rxReject');
 			Route::get('rx/week_periods', 'AppController@getPeriods');
 			Route::post('rx/load_period', 'AppController@getPeriod');
 			Route::get('products', 'AppController@products');
@@ -162,3 +164,5 @@ Route::middleware(["jwt.auth"])->group(function() {
 
 Route::get('/ws/sisavi', 'HomeController@wsSisavi');
 Route::post('/ws/sisavi', 'HomeController@wsSisavi');
+
+Route::get('/ws/sisavi/pdf', 'HomeController@rxGenerationPDF');

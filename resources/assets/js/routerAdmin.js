@@ -76,7 +76,11 @@ const MyRouter = new VueRouter({
 	    { path: '/notes', component: require(page+'notes/index.vue').default, meta:{title:"Notas"}},
 	    { path: '/notes/edit', component: require(page+'notes/edit.vue').default, meta:{title:"Nuevo"}},//Cuando no envian parametro
 	    { path: '/notes/edit/:id', component: require(page+'notes/edit.vue').default, meta:{title:"Editar"}},//Con parametro
-	  ]
+		
+		{ path: '/lista-de-precios', component: require(page+ 'lista-de-precios-index.vue').default, meta: { title: "Lista de precios"}},//Con parametro
+		{ path: '/lista-de-precios/:id', component: require(page+ 'lista-de-precios.vue').default, meta: { title: "Editar Lista de precio"}},//Con parametro
+	]
+
 });
 
 //Titulos del website

@@ -20,9 +20,12 @@ class TypesController extends Controller {
         if($request->has('client_id')) {
             $clientId = $request->input('client_id');
             $client = Client::findOrFail($clientId);
+            
+            $priceListId = $client->price_list_id;
+            if($request->has('list_id'))
+                $priceListId = $request->input('list_id');
 
-            if($client->price_list_id !== 0) {
-                $priceListId = $client->price_list_id;
+            if($priceListId !== 0) {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, 'https://apiv2.augenlabs.com/v1/lists/' . $priceListId); 
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
@@ -35,6 +38,7 @@ class TypesController extends Controller {
                 $types = $priceList->designs;
                 foreach($types as &$type) {
                     $type->isNew  = true;
+                    $type->extras  = $priceList->extras;
                 }
             } else {
                 $types = Type::all();

@@ -140,7 +140,7 @@
             <form role="form" class="form-horizontal" v-if="indx_show != null">
                 <div>
                     <div class="col-sm-6" style="text-align: left;">
-                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <img src="https://sistema.augenlabs.com/public/images/logo.png" width="25%">
                         <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
                     </div>
                     <div class="col-sm-3"></div>
@@ -437,11 +437,11 @@ export default {
                         })
             } else {
 
-                if (this.order.status != 'garantia' && status == 'entregado' && this.order.client.status == 'Inactivo') {
-                    alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
-                    alertify.closeAll();
-                    return false;
-                }
+                // if (this.order.status != 'garantia' && status == 'entregado' && this.order.client.status == 'Inactivo') {
+                //     alert('No se puede cambiar el estatus, desbloque el cliente para poder continuar.');
+                //     alertify.closeAll();
+                //     return false;
+                // }
 
                 alertify.confirm('¿Seguro que deseas cambiar el estatus de este RX?', () => {
                     this.$parent.inPetition=true;

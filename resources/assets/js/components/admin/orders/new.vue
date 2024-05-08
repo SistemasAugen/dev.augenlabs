@@ -256,7 +256,7 @@
                     <th>Diseño</th>
                     <th>Material</th>
                     <th>Caracteristica</th>
-                    <th v-if="!isAugenLabs">Antireflejante</th>
+                    <th v-if="!isAugenLabs">Extras</th>
                     <th v-else>Cantidad</th>
                     <th>Costo</th>
                     <th v-if="!isAugenLabs">Servicio</th>
@@ -271,7 +271,7 @@
                     <td>{{ cart.product.name }}</td>
                     <td>{{ cart.product.category_name }}</td>
                     <td>{{ cart.product.type_name }}</td>
-                    <td v-if="!isAugenLabs && cart.extras[0]">
+                    <td v-if="!isAugenLabs">
                       {{
                         cart.extras
                           .map((row) => {
@@ -285,32 +285,6 @@
                       >
                         <i class="fa fa-plus"></i>
                       </button>
-                    </td>
-                    <!-- <td v-else>
-                                            <button class="btn btn-sm btn-warning" @click="selectOrder(cart.product)">
-                                                <i class="fa fa-plus" v-show="cart.product.extras[0]"></i>
-                                            </button>
-                                        </td>
-										El sig bloque else-if, else-if, valida la presencia del campo No AR, si esta presente, no permite agregar ningun antireflejante,
-										corrobar el v-else anterior si es necesario tenerlo presente o escribrilo despues de esta validacion. -->
-                    <td
-                      v-else-if="
-                        !isAugenLabs && (cart.not_ar != 1 || cart.ar != 1)
-                      "
-                    >
-                      <button
-                        class="btn btn-sm btn-warning"
-                        @click="selectOrder(cart)"
-                      >
-                        <i class="fa fa-plus"></i>
-                      </button>
-                    </td>
-                    <td
-                      v-else-if="
-                        !isAugenLabs && cart.not_ar == 1 && cart.ar == 1
-                      "
-                    >
-                      No AR activo.
                     </td>
                     <td v-else>
                       <input
@@ -526,7 +500,38 @@
         </tbody>
       </table>
       <div id="types_table">
-        <div class="row">
+        <div class="row" v-if="hasLists">
+          <div class="col-md-12">
+            <h3 v-if="selectedListId == null">Selecciona una lista de precios</h3>
+            <h3 v-else>Elige un tipo de producto:</h3>
+          </div>
+          <template v-if="selectedListId == null">
+            <div class="col-md-6 col-md-offset-3" v-for="(list, indx) in lists" :key="list.id">
+              <button
+              class="btn btn-default btn-block"
+              @click="selectedListId = list.id; getTypes();"
+              v-if="canViewList(list.id)"
+            >
+              {{ list.name }}
+              </button>
+            </div>
+          </template>
+          <template v-else>
+            <div class="col-md-6 col-md-offset-3" v-for="(type,indx) in types" :key="type.id">
+              <button
+                class="btn btn-default btn-block"
+                @click="selectProduct(type)"
+                v-if="type.canSee"
+              >
+              {{ type.name }}
+              </button>
+            </div>
+            <div class="col-md-6 col-md-offset-3">
+              <button class="btn btn-warning btn-block" @click="selectedListId = null">Regresar</button>
+            </div>
+          </template>
+        </div>
+        <div class="row" v-else>
           <div class="col-md-12">
             <h3>Elige un tipo de producto:</h3>
           </div>
@@ -548,7 +553,7 @@
       <div id="extras_table">
         <div class="row">
           <div class="col-md-12">
-            <h3>Seleccionar antireflejante:</h3>
+            <h3>Seleccionar extra:</h3>
           </div>
           <div
             class="col-md-6 col-md-offset-3"
@@ -640,7 +645,7 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th v-for="currentMaterial in type.materials" :style="'text-align: center;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'" :colspan="Math.min(1, currentMaterial.material.characteristics.length)">
+                    <th v-for="currentMaterial in type.materials" :style="'width: 100px;text-align: center;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'" :colspan="Math.max(1, currentMaterial.material.characteristics.length)">
                         {{ currentMaterial.material.name }}
                     </th>
                 </tr>
@@ -650,12 +655,8 @@
                     <td style="background-color: #f5f5f6; border: 0 !important;"></td>
                     <template v-for="(currentMaterial, idj) in type.materials">
                       <template v-for="(currentCharacteristic, idx) in currentMaterial.material.characteristics">
-                        <td :style="'width: 100px;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'">
-                          <select class="form-control" @change="handleAddChar(currentMaterial, idx, $event)" v-if="!currentCharacteristic.characteristic_id" style="width: 150px;">
-                              <option hidden selected disabled>Selecciona una característica</option>
-                              <option v-for="characteristic in characteristics" :value="characteristic.id">{{ characteristic.name }}</option>
-                          </select>
-                          <span v-else>{{ currentCharacteristic.characteristic.name }} <button class="btn btn-danger" @click="removeChar(currentMaterial, idj)" v-if="isEditing"><i class="fa fa-trash"></i></button></span>
+                        <td :style="'width: 100px;' + currentMaterial.color == '#ffffff' ? 'color: #000;' : 'color: #fff;background-color: ' + currentMaterial.color + ';'" >
+                          <span>{{ currentCharacteristic.characteristic.name }}</span>
                         </td>
                       </template>
                      
@@ -666,8 +667,16 @@
                     <template v-for="currentMaterial in type.materials">
                       <template v-for="currentCharacteristic in currentMaterial.material.characteristics">
                         <td style="width: 100px;">
-                            <span  class="form-control" v-if="currentCharacteristic.price > 0">{{  currentCharacteristic.price | currency }}</span>
-                            <span  class="form-control" v-else>-</span>
+                            <button class="btn btn-sm btn-block" @click="_addProduct(type, currentMaterial.material, currentCharacteristic.characteristic, currentCharacteristic.price, currentCharacteristic.cost)" v-if="currentCharacteristic.price > 0">
+                              {{  currentCharacteristic.price | currency }}
+                            </button>
+                            <span v-else>-</span>
+
+                            <!-- addProduct(
+                        filterProduct(product, category.id, subcategory.id),
+                        category,
+                        subcategory
+                      ) -->
                         </td>
                       </template>
                     </template>
@@ -680,13 +689,15 @@
    
     <sweet-modal ref="modalRx" width="60%">
 
-      <form role="form" class="form-horizontal" @submit.prevent="newBranch($event.target)" v-if="index_prod != null">
+      <form role="form" :class="'form-horizontal' + (isSafilo ? ' is-safilo': '')" @submit.prevent="newBranch($event.target)" v-if="index_prod != null">
         <div class="form-group">
-						
-						<div class="col-sm-6" style="text-align: left;">
-                <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
-                <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
-						</div>
+            <div class="col-sm-6" style="text-align: left;">
+                <img src="https://sistema.augenlabs.com/public/images/safilo_rx_color.png" style="width: 300px; height: 50px;" v-if="isSafilo">
+                <img src="https://sistema.augenlabs.com/public/images/logo.png" style="height: 50px;" v-else>
+                <div style="display: block;" v-if="client.is_safilo == 1">
+                    Receta SAFILO <vSwitch name="is_safilo" :checked="isSafilo" v-model="isSafilo"></vSwitch>
+                </div>
+            </div>
             <div class="col-sm-6" style="text-align: right;">
                 <h3><b>{{ client.branch.name }}</b></h3>
                 <div v-if="[1, 2, 3, 4, 5, 6].includes(client.branch.laboratory_id) && 'laboratory_id' && $parent.sale.cart[index_prod]">
@@ -701,8 +712,10 @@
                   ]" label="name" index="id"></v-select>
                 </div>
                 <h4 v-else><b>{{ client.branch.laboratory.name }}</b></h4>
-						</div>
-
+            </div>
+            <div class="col-sm-12">
+                <p v-if="isSafilo" style="margin: 0; font-weight: bold; text-decoration: underline; color: rgb(177, 78, 79);">* Estás capturando una <b>receta SAFILO</b>, favor de incluir un <b>armazón SAFILO</b></p>
+            </div>
         </div>
         <hr><br>
         <p style="text-align: left;"><b>CAPTURA DE DATOS</b></p>
@@ -868,10 +881,23 @@
         <p style="text-align: left;"><b>ARMAZÓN</b></p>
         <div class="form-group">
 
-          <div class="col-sm-4" style="text-align: left;">
-            <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
-            <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
-          </div>
+          <template v-if="isSafilo">
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300;font-size: 11.5px;">TIPO DE ARMAZÓN:</label>
+              <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
+            </div>
+            <div class="col-sm-2" style="text-align: left;">
+              <label style="font-weight:300;font-size: 13px;">MARCA:</label>
+              <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_marca" :options="tipo_marcaOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
+            </div>
+          </template>
+          <template v-else>
+            <div class="col-sm-4" style="text-align: left;">
+              <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
+              <v-select v-model="$parent.sale.cart[index_prod].rx_data.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" @change="changeRXdata(index_prod)"/>
+            </div>
+          </template>
+          
           <div class="col-sm-2" style="text-align: left;">
             <label style="font-weight:300;font-size: 13px;">HORIZONTAL"A"</label>
             <input v-model="$parent.sale.cart[index_prod].rx_data.rx_horizontal_a" class="form-control" id="rx_horizontal_a" @change="changeRXdata(index_prod)">
@@ -1040,11 +1066,19 @@ export default {
           {value:'Plástico',label:'Plástico'},
           {value:'Ranurado',label:'Ranurado'},
       ],
+      tipo_marcaOpcs: [
+        {value:'Carrera',label:'Carrera'},
+        {value:'Polaroid',label:'Polaroid'},
+      ],
       modal:{
         icon:'',
         block:false,
         msg:null
-      }
+      },
+      selectedListId: null,
+      hasLists: false,
+      lists: [],
+      isSafilo: false
     };
   },
   computed: {
@@ -1084,6 +1118,18 @@ export default {
       },
       deep: true,
     },
+    isSafilo: function(newValue, oldValue) {
+        const index_prod = this.index_prod;
+        if (newValue) {
+            // Prepend 'SF-' if it's not already there
+            this.$parent.sale.cart[index_prod].rx = this.$parent.sale.cart[index_prod].rx.startsWith('SF-') ? this.$parent.sale.cart[index_prod].rx : 'SF-' + this.$parent.sale.cart[index_prod].rx;
+            this.$parent.sale.cart[index_prod].rx_data.rx_rx = this.$parent.sale.cart[index_prod].rx_data.rx_rx.startsWith('SF-') ? this.$parent.sale.cart[index_prod].rx_data.rx_rx : 'SF-' + this.$parent.sale.cart[index_prod].rx_data.rx_rx;
+        } else {
+            // Remove 'SF-' if it exists
+            this.$parent.sale.cart[index_prod].rx = this.$parent.sale.cart[index_prod].rx.startsWith('SF-') ? this.$parent.sale.cart[index_prod].rx.substring(3) : this.$parent.sale.cart[index_prod].rx;
+            this.$parent.sale.cart[index_prod].rx_data.rx_rx = this.$parent.sale.cart[index_prod].rx_data.rx_rx.startsWith('SF-') ? this.$parent.sale.cart[index_prod].rx_data.rx_rx.substring(3) : this.$parent.sale.cart[index_prod].rx_data.rx_rx;
+        }
+    }
   },
   methods: {
     reset: function () {
@@ -1111,6 +1157,7 @@ export default {
             return {
               product_has_subcategory_id: row.product_has_subcategory_id,
               price: row.price,
+              cost: row.cost,
               discount: row.discount,
               service: row.service,
               total: row.total,
@@ -1119,7 +1166,8 @@ export default {
               percent_discount: row.percent_discount,
               extras: extras,
               rx_data: row.rx_data,
-              laboratory_id: row.laboratory_id
+              laboratory_id: row.laboratory_id,
+              metadata: row.metadata != undefined ? row.metadata : []
             };
           });
           axios
@@ -1179,7 +1227,7 @@ export default {
     getTypes: function () {
       this.$parent.inPetition = true;
       axios
-        .get(tools.url("/api/types") + ('id' in this.client ? '?client_id=' + this.client.id : ''))
+        .get(tools.url("/api/types") + ('id' in this.client ? '?client_id=' + this.client.id : '') + (this.selectedListId != null ? '&list_id=' + this.selectedListId : ''))
         .then((response) => {
           let types = response.data;
           const CHAPULTEPEC_LAB = 46;
@@ -1283,9 +1331,26 @@ export default {
     },
     selectClient: function (client_id) {
       const client = this.clients.filter(client => client.id == client_id).shift();
+      this.hasLists = client.lists.length > 0; 
+      this.selectedListId = null;
+
+      console.log('hasList', this.hasLists);
+      if(this.hasLists) {
+			  this.getLists();
+      }
+
+      if(this.hasLists == false) {
+        alert('Si ves esta alerta, reportalo por favor a sistemas, esto es un error');
+        alertify.closeAll();
+        return false;
+      }
+
       
       if(client.status == "Inactivo") {
-        alert('Estás apunto de capturar una RX de un cliente bloqueado');
+        alert('Esta acción no está permitida para clientes bloqueados');
+        alertify.closeAll();
+        return false;
+
       }
       this.$parent.sale.client_id = client_id;
       this.getClient();
@@ -1386,9 +1451,23 @@ export default {
         });
       } else {
         this.$parent.sale.cart.forEach((v, k) => {
-          let discount = this.client.discounts.find((row) => {
-            return row.type_id == v.product.type_id;
-          });
+          const isDiscountByList = 'list_id' in v.product;
+          var discount = null;
+
+          if(isDiscountByList) {
+            // new method for discount
+            const listData = this.client.lists.find(l => l.value == v.product.list_id);
+            if(listData.discount > 0) {
+              discount = {
+                discount: listData.discount
+              };
+            }
+            
+          } else { 
+            discount = this.client.discounts.find((row) => {
+              return row.type_id == v.product.type_id;
+            });
+          }
 
           if (discount) {
             this.$parent.sale.cart[k].percent_discount = discount.discount;
@@ -1480,6 +1559,7 @@ export default {
           rx_puente:null,
           rx_observaciones:null,
           rx_servicios:null,
+          rx_marca:null,
           have_data:false
         }
       };
@@ -1540,9 +1620,11 @@ export default {
           this.order.price =
             window.parseFloat(this.order.price) +
             window.parseFloat(extra.price);
+
+          this.order.price = this.order.price.toFixed(2);
         } else {
           this.$parent.showMessage(
-            "No se puede agregar otro Antireflejante de este tipo.",
+            "No se puede agregar otro extra del mismo tipo.",
             "warning"
           );
         }
@@ -1556,11 +1638,19 @@ export default {
       let no_AR = cart.not_ar;
       let ar = cart.ar;
       let indexProduct = this.$parent.sale.cart.findIndex((row) => {
-        if (row.product_has_subcategory_id == cart.product_has_subcategory_id)
+        if (row.id == cart.id)
           return true;
       });
       let order = this.$parent.sale.cart[indexProduct];
       this.$parent.sale.cart.splice(indexProduct, 1);
+
+      console.log(indexProduct, order, product);
+
+      this.order = order;
+      this.extras = product.extras;
+      alertify.extrasDialog(document.getElementById("extras_table"));
+
+      return;
 
       if (product.extras.length == 0 || (no_AR == 1 && ar == 1)) {
         alertify.closeAll();
@@ -1815,11 +1905,92 @@ export default {
           if (this.$parent.sale.cart[indx]['rx_data']['rx_vertical_b'] != null && this.$parent.sale.cart[indx]['rx_data']['rx_vertical_b'] != '') {checkform = true;}
           this.$parent.sale.cart[indx]['rx_data']['have_data'] = checkform;
         // }
+    },
+    getLists() {
+      // this.$parent.inPetition = true;
+      axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
+        console.log(result);
+        this.lists = result.data;
+        console.log('lists loaded', this.lists)
+      });
+    },
+    canViewList(list_id) {
+      const listsIds = this.client.lists.map(l => l.value);
+      return listsIds.includes(list_id);
+    },
+    _addProduct(design, material, characteristic, price, cost) {
+        var order = {
+            id: Date.now(),
+            product_has_subcategory_id: null,
+            price: price,
+            cost: cost,
+            discount: 0,
+            total: price,
+            service: 0,
+            extras: [],
+            product: {
+                name: design.name,
+                category_name: material.name,
+                type_name: characteristic.name,
+                list_id: design.pivot.list_id, // list_id for map later if there's any discount.
+                extras: design.extras, // extras if needed. 
+            },
+            rx: this.rx,
+            not_ar: 0,
+            rx_data: {
+                rx_rx:null,
+                rx_fecha:null,
+                rx_cliente:null,
+
+                rx_od_esfera:null,
+                rx_od_cilindro:null,
+                rx_od_eje:null,
+                rx_od_adicion:null,
+                rx_od_dip:null,
+                rx_od_altura:null,
+                rx_od_esfera:null,
+
+                rx_od_esfera_dos:null,
+                rx_od_cilindro_dos:null,
+                rx_od_eje_dos:null,
+                rx_od_adicion_dos:null,
+                rx_od_dip_dos:null,
+                rx_od_altura_dos:null,
+                rx_od_esfera_dos:null,
+                
+                rx_diseno:null,
+                rx_material:null,
+                rx_tipo_ar:null,
+                rx_tallado:null,
+                rx_tipo_armazon:null,
+                rx_horizontal_a:null,
+                rx_vertical_b:null,
+                rx_diagonal_ed:null,
+                rx_puente:null,
+                rx_observaciones:null,
+                rx_servicios:null,
+                have_data:false
+            },
+            metadata: {
+                diseno: design.name,
+                material: material.name,
+                characteristic: characteristic.name
+            }
+        };
+
+        order.not_ar = 1;
+        order.ar = 1;
+
+        alertify.closeAll();
+        this.$parent.sale.cart.push(order);
+        this.getDiscounts();
+        this.rx = "";
     }
   },
   mounted() {
     this.getStates();
     this.getTypes();
+    this.selectedListId = null;
     if (this.$parent.sale.client_id != "") this.getClient();
 
     alertify.clientsDialog ||
@@ -1910,8 +2081,16 @@ export default {
   },
 };
 </script>
-<style media="screen">
+<style media="screen" lang="scss" scoped>
 div#types_table button {
   margin-top: 35px;
 }
+
+
+.is-safilo {
+    b {
+        color: rgb(177, 78, 79) !important;
+    }
+}
+
 </style>

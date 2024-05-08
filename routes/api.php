@@ -12,6 +12,7 @@ Route::group(['prefix' => 'v2'], function() {
         Route::group(['middleware' => 'jwt.auth'], function () {
             Route::get('rx/actives', 'AppController@rxActives');
             Route::get('rx/pendings', 'AppController@rxPendings');
+            Route::get('rx/get_rx', 'AppController@getSafiloNumber');
             Route::post('rx/request', 'AppController@rxRequest');
             Route::post('rx/approve/{id}', 'AppController@rxApprove');
             Route::post('rx/reject/{id}', 'AppController@rxReject');
@@ -164,5 +165,8 @@ Route::middleware(["jwt.auth"])->group(function() {
 
 Route::get('/ws/sisavi', 'HomeController@wsSisavi');
 Route::post('/ws/sisavi', 'HomeController@wsSisavi');
+
+Route::get('/ws/augenlabs-api', 'HomeController@wsSisavi');
+Route::post('/ws/augenlabs-api', 'HomeController@wsSisavi');
 
 Route::get('/ws/sisavi/pdf', 'HomeController@rxGenerationPDF');

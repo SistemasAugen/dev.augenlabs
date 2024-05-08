@@ -10,6 +10,33 @@
 |
 */
 
+Route::get('/test_connection', function() {
+    // Test database connection
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+    } catch (\Exception $e) {
+        die("Could not connect to the database.  Please check your configuration. error:" . $e );
+    }
+});
+
+
+
+Route::get('/clear-cache', function() {
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('view:clear');
+});
+
+Route::get('/test_mail', function() {
+    Illuminate\Support\Facades\Mail::raw('Test mail called from website', function ($message) {
+        $message->from('contacto@augenlabs.com', 'Augen Sistema');
+        $message->to('sistemas@augenlabs.com')->subject('Prueba');
+    });
+    
+    echo 'Mail sent';
+});
+
 Route::group(['prefix' => 'v1'], function() {
     Route::group(['prefix' => 'cronjob'], function() {
         Route::get('all_ok', 'CronjobController@allOk');

@@ -117,6 +117,7 @@ class AppController extends Controller {
         $client = \Auth::user();
         $orders = $client->orders()
                          ->whereBetween('created_at', [ $firstDayOfMonth, $lastDayOfMonth ])
+                         ->orderBy('created_at', 'DESC')
                          ->get();
 
          foreach ($orders as &$nOrder) {
@@ -375,6 +376,7 @@ class AppController extends Controller {
         $client = \Auth::user();
         $orders = $client->orders()
                          ->whereBetween('created_at', [  $firstDayOfMonth, $lastDayOfMonth ])
+                         ->orderBy('created_at', 'DESC')
                          ->get();
 
         foreach ($orders as &$nOrder) {
@@ -391,7 +393,9 @@ class AppController extends Controller {
                  }, $nOrder->extras));
              }
 
-             $nOrder->selected = 1;
+             if($nOrder->passed < 0) {
+                $nOrder->selected = 1;
+             }
              $nOrder->totalPrice = floatval($nOrder->total)  - floatval($nOrder->discount) - floatval($nOrder->discount_admin) + floatval($nOrder->iva);
         }
 
@@ -438,7 +442,7 @@ class AppController extends Controller {
         ];
         
         if(in_array($data['laboratory_id'], [1, 2, 3, 4, 5, 6])) {
-            // $cc = 'captura' . $mapLabs[$value['laboratory_id']] . '@augenlabs.com';
+            // $cc = 'captura' . $mapLabs[$data['laboratory_id']] . '@augenlabs.com';
             Mail::to('sistemas@augenlabs.com')
             // ->cc($cc)
             ->send(new RequestRx($data, $content, 'CAPTURA'));
@@ -447,6 +451,15 @@ class AppController extends Controller {
         }
 
         return Response::set(true, 'RX Creada correctamente', compact('order'));
+    }
+
+    public function getSafiloNumber() {
+        $prefix = 'SF-';
+
+        $number = Order::where('rx', 'LIKE', $prefix . '%')->count() + 1;
+        $rx = $prefix . str_pad($number, 5, '0', STR_PAD_LEFT);
+        
+        return response()->json(Response::set(true, null, compact('rx')));
     }
 
     public function notFound() {

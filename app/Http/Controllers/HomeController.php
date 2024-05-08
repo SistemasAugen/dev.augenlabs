@@ -17,6 +17,7 @@ use App\User;
 use App\Category;
 use App\Product;
 use App\Purchase;
+use App\Notification;
 use App\ProductHasSubcategory;
 use Zipper;
 use Excel;
@@ -1106,7 +1107,7 @@ class HomeController extends Controller {
 										->where('subcategory_id', $subcaregory->id)
 										->where('category_id', $category->id)
 										->where('type_id', TYPE_ID)
-										->where('cost', '>', 0)
+										// ->where('cost', '>', 0)
 										->where('price', '>', 0)
 										->orderBy('created_at', 'DESC')
 										->first();
@@ -1127,12 +1128,30 @@ class HomeController extends Controller {
 			$order->price = $phs->price;
 			$order->service = 0;
 			$order->total = $phs->price;
-			$order->iva = round($phs->price / 1.16, 2);
+			$order->iva = round($phs->price * 0.16, 2);
 			$order->branch_id = $client->branch_id;
 			$order->laboratory_id = $client->branch->laboratory->id;
 
-			$order->save();
-			$orderId = $order->id;
+			// $order->save();
+
+			$order->branch;
+			$order->branch->laboratory;
+			$order->productHas;
+
+			$notification = new Notification();
+        	$notification->text = 'RX ' . $order->rx . ' - Solicitud desde WS';
+        	$notification->type = 'rx';
+
+			$user = User::where('laboratory_id', $order->branch->laboratory_id)
+                    ->where('email', 'LIKE', 'coordinador%')
+                    ->first();
+
+			$notification->user_id = $user->id;
+			$notification->url = '';
+			$notification->metadata = json_encode($order->toArray());
+			$notification->save();
+
+			$orderId = 'TBD'; // $order->id;
 
 			$response = <<<XML
 			<?xml version="1.0" encoding="UTF-8" ?>

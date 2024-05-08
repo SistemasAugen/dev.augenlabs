@@ -272,7 +272,7 @@
             <form role="form" class="form-horizontal" v-if="indx_show != null">
                 <div>	
 			        <div class="col-sm-6" style="text-align: left;">
-                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <img src="https://sistema.augenlabs.com/public/images/logo.png" width="25%">
                         <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
                     </div>
                     <div class="col-sm-3"></div>

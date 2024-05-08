@@ -122,7 +122,7 @@
 	
 	<div class="row">
 		<div class="col-sm-7" style="">
-			<img src="https://sistema.augenlabs.com/public/images/logo.png" width="150">
+			<img src="data:image/png;base64,{{ $inputs['base64Image'] }}" width="150">
 		</div>
 		
 							
@@ -197,7 +197,7 @@
 	<br><br><br><br><br>
     <div class="row">
 		<div class="col-sm-12" style="text-align:right">
-			<img src="https://sistema.augenlabs.com/public/images/logo.png" width="100">
+			<img src="data:image/png;base64,{{ $inputs['base64Image'] }}" width="100">
 		</div>
 	</div>
 		

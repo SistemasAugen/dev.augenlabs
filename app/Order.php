@@ -15,14 +15,32 @@ class Order extends Model
 {
     protected $guarded=[];
     protected $appends = ['passed', 'cont_dias'];
-    public function productHas()
-    {
+    public function productHas() {
         $pivot = ProductHasSubcategory::find($this->product_has_subcategory_id);
         // dd($pivot);
-        if(is_null($pivot)){
-            $this->product=["name"=>"No disponible"];
-        }
-        else{
+        if(is_null($pivot)) {
+            $this->product= ["name" => "No disponible" ];
+            $this->product = array_merge($this->product, [ "subcategory_name" => "No disponible"]);
+            $this->product = array_merge($this->product, [ "type_name" => "No disponible"]);
+
+            $metadata = isset($this->metadata) ? json_decode($this->metadata, true) : null;
+            $orderMetadata = [];
+            
+            if(!is_null($metadata) && isset($metadata['diseno'])) {
+                $orderMetadata['name'] = $metadata['diseno'];
+            }
+
+            if(!is_null($metadata) && isset($metadata['material'])) {
+                $orderMetadata['subcategory_name'] = $metadata['material'];
+            }
+
+            if(!is_null($metadata) && isset($metadata['characteristic'])) {
+                $orderMetadata['type_name'] = $metadata['characteristic'];
+            }
+
+            $this->product = array_merge($this->product, $orderMetadata);
+
+        } else{
             $this->product = Product::find($pivot->product_id);
 
             if(is_null($this->product)){

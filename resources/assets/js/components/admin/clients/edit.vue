@@ -38,8 +38,8 @@
                                         <input-form name="direccion" text="Direccion" :data.sync="client.address" validate="required"></input-form>
                                         <input-form name="colonia" text="Colonia" :data.sync="client.suburb" validate="required"></input-form>
 										<select-form text="PDV" name="punto de venta" :options="branches" :data.sync="client.branch"></select-form>
-										<select-form text="Estatus" name="estatus" :options="statusOp" :data.sync="client.status" :disabled="!allowedUsers.includes(userId)"></select-form>
-										<select-form text="División" name="category" :options="['DOCTORES', 'CADENAS', 'OFTALMÓLOGOS']" :data.sync="client.category"></select-form>
+										<select-form text="Estatus" name="estatus" :options="statusOp" :data.sync="client.status" :disabled="$route.params.id && !allowedUsers.includes(userId)"></select-form>
+										<select-form text="División" name="category" :options="['DOCTORES', 'CADENAS', 'OFTALMÓLOGOS', 'SAFILO', 'GAMA BASICA']" :data.sync="client.category"></select-form>
 										<hr/>
 											<input-form name="notification_mail" text="Correo de notificaciones" :data.sync="client.notification_mail" validate=""></input-form>
 										<hr>
@@ -49,6 +49,10 @@
 										<input-form name="contacto_celular" text="Origen del cliente" :data.sync="client.contact_celphone"></input-form>
 										<hr/>
 										<checkbox-form text="Cliente SAFILO" :data.sync="client.is_safilo" value="1" name="is_safilo" key="is_safilo"></checkbox-form>
+										<hr/>
+										<div v-if="lists.length > 0">
+											<select-form text="Listas de precios" name="lists" :options="lists" :data.sync="client.lists" :multiple="true"></select-form>
+										</div>
 									</div>
 									<div class="tab-pane" id="v-discounts">
 										<div class="row">
@@ -61,7 +65,7 @@
 													</thead>
 													<tbody>
 														<tr>
-															<td><input type="text" v-model="discountGeneral"></td>
+															<td><input type="number" min="0" class="form-control" v-model="discountGeneral"></td>
 														</tr>
 													</tbody>
 												</table>
@@ -75,13 +79,23 @@
 													</thead>
 													<tbody>
 														<tr>
-															<td><input type="number" min="0" v-model="client.payment_plan"><small>*En semanas.</small></td>
+															<td><input type="number" min="0" class="form-control" v-model="client.payment_plan"><small>*En semanas.</small></td>
 														</tr>
 													</tbody>
 												</table>
 											</div>
 										</div>
-										<table v-for="typ in types" class="table table-bordered" :key="typ.id">
+										<hr/>
+										<h3>Descuentos por producto</h3>
+										<table class="table table-bordered" style="margin: 0 auto; width: 600px;">
+											<template v-for="list in client.lists">
+												<tr>
+													<td class="discount-header" style="background: #000; text-align: center; color: #fff;">{{ list.label }}</td>
+													<td><input type="number" class="form-control" v-model="list.discount"></td>
+												</tr>
+											</template>
+										</table>	
+										<!-- <table v-for="typ in types" class="table table-bordered" :key="typ.id">
 											<thead>
 												<tr>
 													<th>{{ typ.name }}</th>
@@ -92,7 +106,9 @@
 													<td><input type="text" v-model="client.discounts[searchDiscount(typ.id)].discount"></td>
 												</tr>
 											</tbody>
-										</table>
+										</table> -->
+
+
 									</div>
 									<div class="tab-pane" id="v-facturacion">
 										<p style="text-align: center;"><b>Direccíon 1</b></p>
@@ -228,7 +244,8 @@
 				check:false,
 				active:1,
 				userId: null,
-				allowedUsers: [ 17, 36, 70 ]
+				allowedUsers: [ 17, 36, 70 ],
+				lists: [],
 			} 
 		},
 		computed:{
@@ -493,7 +510,18 @@
 										function() { });
 					}
 				}
-			}
+			},
+			getLists() {
+				// this.$parent.inPetition = true;
+				axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
+					console.log(result);
+					this.lists = result.data;
+					this.lists=jQuery.map(this.lists,(row)=>{
+						return {'value':row.id,'label':row.name};
+					});
+					// this.$parent.inPetition = false;
+				});
+			},
 		},
 		mounted(){
 			this.userId = this.$parent.user.id; 
@@ -505,6 +533,7 @@
             this.getTypes();
 			this.getStates();
 			this.getbranches();
+			this.getLists();
 		}
 	}
 </script>

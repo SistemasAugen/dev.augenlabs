@@ -53,7 +53,7 @@
             <form role="form" class="form-horizontal" v-if="order != null">
                 <div>	
                     <div class="col-sm-6" style="text-align: left;">
-                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <img src="https://sistema.augenlabs.com/public/images/logo.png" width="25%">
                         <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
                     </div>
                     <div class="col-sm-3"></div>
@@ -310,9 +310,9 @@ export default {
         finishOrder:function(id){
             const order = this.orders.filter(o => o.id == id).shift();
             
-            if (order.status == 'en_proceso' && order.client.status == 'Inactivo') {
-                alert('Estás dando terminado a una rx de un cliente esta bloqueado.');
-            }
+            // if (order.status == 'en_proceso' && order.client.status == 'Inactivo') {
+            //     alert('Estás dando terminado a una rx de un cliente esta bloqueado.');
+            // }
             alertify.confirm('¿Deseas marcar como terminado este RX?', ()=>{
                 this.$parent.inPetition=true;
                 let params={

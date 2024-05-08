@@ -3,8 +3,7 @@
     <tr>
         <td rowspan="5" colspan="3"></td>
         <td rowspan="5" colspan="3">
-            <b>CLIENTE:</b>{{ $client->name }} <br/><br/>
-            <b>FECHA DE CONSULTA:</b> {{ date('d/m/Y') }}
+            {{ $client->name }}&nbsp;-&nbsp;{{ date('d/m/Y') }}
         </td>
         <td rowspan="5" colspan="6" style="font-weight: bold;"> ESTADO DE CUENTA</td>
     </tr>
@@ -54,20 +53,26 @@
     {{-- END SHEET BODY --}}
 
     {{-- SHEET FOOTER --}}
+    <tr></tr>
     <tr>
-        <td rowspan="6" colspan="4">
+        <td colspan="4">
             Le recordamos que el número de cuenta donde debe realizar la transferencia es:
-            <br/>
-            <br/>
-            <b>INNOVACION EN OPTICA APLICADA SAPI DE CV <br/> BANORTE</b>
-            <p>Clabe Interbancaria: <b>072 320 01027637749 8</b> </p>
-            <p>Cuenta: <b></b> 1027637749</p>
         </td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <b>INNOVACION EN OPTICA APLICADA SAPI DE CV - BANORTE</b>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <p>Clabe Interbancaria:&nbsp;<b>072 320 01027637749 8</b> </p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">
+        <p>Cuenta:<b>&nbsp;</b> 1027637749</p>
+        </td>
     </tr>
     {{-- <tr> --}}
         {{-- <td>% Desc.</td> --}}

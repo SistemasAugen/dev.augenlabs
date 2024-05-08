@@ -101,6 +101,7 @@
                                     <th>RX</th>
                                     <th>Cliente</th>
                                     <th>Fecha de Captura</th>
+                                    <th v-if="allowedUsers.includes(userId)">Fecha de Terminado</th>
                                     <th>Fecha de Entrega</th>
                                     <th>Semanas restantes</th>
                                     <th>Diseño</th>
@@ -123,6 +124,7 @@
                                     <td>{{ cart.rx }}</td>
                                     <td>{{ cart.client.name }}</td>
                                     <td>{{ cart.created_at }}</td>
+                                    <td v-if="allowedUsers.includes(userId)">{{ cart.finish_date }}</td>
                                     <td>{{ cart.delivered_date }}</td>
                                     <td>
                                         <p style="background-color:green;" v-if="cart.status=='pagado'">0</p>
@@ -151,7 +153,7 @@
                                     <td>
                                         <button class="btn btn-warning">{{ cart.status.replace("_"," ") }}</button>
                                     </td>
-                                    <td v-if="isAdmin"><button class="btn" @click="payOrder(cart.id)" :disabled="cart.client.name == 'Cliente eliminado'">Saldar cuenta </button></td>
+                                    <td v-if="isAdmin"><button class="btn" @click="payOrder(cart.id)" :disabled="cart.client.name == 'Cliente eliminado' && cart.status == 'terminado'">Saldar cuenta </button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -184,6 +186,8 @@ export default {
             client_id:"",
             ids:[],
             subtotal: 0.0,
+			userId: null,
+            allowedUsers: [ 17, 36, 70 ],
         }
     },
     computed: {
@@ -488,6 +492,8 @@ export default {
         },
     },
     mounted() {
+		this.userId = this.$parent.user.id;
+
         if(this.isAdmin)
             this.getReports();
         else

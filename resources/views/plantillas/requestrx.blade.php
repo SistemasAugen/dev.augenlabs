@@ -71,8 +71,11 @@
 <body >
 	<div class="form-group">	
 		<div class="col-sm-6" style="text-align: left;">
-            <img src="https://dev.augenlabs.com/public/images/logo.png" width="45%">
-            <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
+			@if (strpos($inputs['rx_rx'], 'SF-') !== false)
+				<img src="https://sistema.augenlabs.com/public/images/safilo_rx_color.png" style="width: 300px; height: 50px;">
+			@else
+				<img src="https://sistema.augenlabs.com/public/images/logo.png" style="height: 50px;">
+			@endif
         </div>
         <div class="col-sm-3"></div>
         <div class="col-sm-3" style="text-align: right;">
@@ -211,7 +214,6 @@
 	<br><br>
     <p style="text-align: left;"><b>ARMAZÓN</b></p>
     <div class="form-group">
-
 		<div class="col-sm-2" >
             <span style="text-align: left;">TIPO DE ARMAZÓN:</span><br>
 			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px;margin-top:4px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ $inputs['rx_tipo_armazon'] }}</p></div>
@@ -243,9 +245,12 @@
 	<br><br><br><br>
     <p style="text-align: left;"><b>OBSERVACIONES</b></p>
     <div class="form-group">
-
 		<div class="col-sm-12" style="">
-			<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ @$inputs['rx_observaciones'] ?: '' }}</p></div>
+			@if (strpos($inputs['rx_rx'], 'SF-') !== false)
+				<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ @$inputs['rx_observaciones'] ?: '' }} - MARCA: {{ @$inputs['rx_marca'] }}</p></div>
+			@else
+				<div style="border:1px solid;background-color:#f8f8f8;border-radius:3px;height:25px"><p style="margin:5px 0 5px 0;padding-left:5px">{{ @$inputs['rx_observaciones'] ?: '' }}</p></div>
+			@endif
 		</div>
     </div>
 

@@ -408,6 +408,10 @@ class BranchesController extends Controller
     }
 
     private function _getCost($order) {
+        if(is_null($order->product_has_subcategory_id)) {
+            return floatval($order->cost);
+        }
+
         $phs    = ProductHasSubcategory::findOrFail($order->product_has_subcategory_id);
         /* $phsNew = ProductHasSubcategory::where('product_id', $phs->product_id)
                                        ->where('subcategory_id', $phs->subcategory_id)

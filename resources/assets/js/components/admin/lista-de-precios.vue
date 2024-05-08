@@ -2,6 +2,9 @@
     <div class="container table-responsive">
         <h1>Lista de precios</h1>
         <br/>
+        <div class="pull-right" style="margin-bottom: 15px;">
+            <button class="btn btn-warning" @click="$router.push('/lista-de-precios/')"><i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;Regresar a listado</button>
+        </div>
         <div v-if="priceList != null">
           <div class="form-group">
             <label for="">Nombre de la lista: </label>
@@ -13,19 +16,16 @@
         <button class="btn btn-primary" @click="togglePreciosOrCostos = !togglePreciosOrCostos; reload();" v-else>Ver precios</button>
         
         <div class="pull-right" style="margin-bottom: 15px;">
-
-          <button class="btn btn-success" @click="isEditing = true" v-if="!isEditing">Editar lista</button>
-          <button class="btn btn-info" @click="cancel()" v-if="isEditing">Cancelar</button>
-          <button class="btn btn-success" @click="save()" v-if="isEditing">Guardar cambios</button>
+            <button class="btn btn-success" @click="isEditing = true" v-if="!isEditing && $parent.userCan('editar_catalogo')" >Editar lista</button>
+            <button class="btn btn-info" @click="cancel()" v-if="isEditing">Cancelar</button>
+            <button class="btn btn-success" @click="save()" v-if="isEditing">Guardar cambios</button>
         </div>
+
+        <div class="alert alert-info" style="margin-top: 15px;" v-if="isEditing">
+            <strong>Atención</strong> Estás editando <b><u>{{ togglePreciosOrCostos ? 'COSTOS' : 'PRECIOS' }}</u></b>.
+        </div>
+
         <div v-for="(currentDesign, number) in priceList.designs">
-          <!-- <div class="form-group">
-              <label>Diseño:</label>
-              <select class="form-control" v-model="currentDesign.id">
-                <option value="0" selected hiddden disabled>SELECCIONA UN DISEÑO</option>
-                <option v-for="design in designs" :value="design.id">{{ design.name }}</option>
-              </select>
-          </div> -->
           <table class="table table-bordered" style="margin: 0;width: inherit; max-width: inherit;">
             <thead :style="number > 0 ? 'display: none;' : ''">
                 <tr>
@@ -108,10 +108,53 @@
             </tbody>
           </table>
         </div>
+        <hr/>
+        <h2>Extras</h2>
+        <div class="extras">
+          <button class="btn btn-info" @click="addExtraSlot()" v-if="isEditing">Añadir extra</button>
+          <br/>
+          <table class="table table-bordered" style="margin: 0;width: inherit; max-width: inherit; margin-top: 15px;" v-if="priceList.extras.length > 0">
+            <tr>
+                <th style="color: #fff; background-color: #212529; border: 1px solid #32383e; font-weight: bold; padding: 8px; line-height: 1.6;">Nombre</th> <!-- Static first cell for "Name" label -->
+                <td v-for="extra in priceList.extras" :key="'name-'+extra.id" style="border: 1px solid #ebebeb; border: 1px solid #ebebeb; padding: 8px; line-height: 1.6;">
+                    <template v-if="isEditing">
+                        <input class="form-control" type="text" v-model="extra.name">
+                    </template>
+                    <template v-else>
+                        {{ extra.name }}
+                    </template>
+                </td>
+            </tr>
+
+            <tr v-if="!togglePreciosOrCostos">
+                <th style="color: #fff; background-color: #212529; border: 1px solid #32383e; font-weight: bold; padding: 8px; line-height: 1.6;">Precio</th> <!-- Static first cell for "Price" label -->
+                <td v-for="extra in priceList.extras" :key="'price-'+extra.id" style="border: 1px solid #ebebeb; border: 1px solid #ebebeb; padding: 8px; line-height: 1.6;">
+                    <template v-if="isEditing">
+                        <input class="form-control" type="number" v-model="extra.price">
+                    </template>
+                    <template v-else>
+                        {{ extra.price | currency }}
+                    </template>
+                </td>
+            </tr>
+            <tr v-else>
+                <th style="color: #fff; background-color: #212529; border: 1px solid #32383e; font-weight: bold; padding: 8px; line-height: 1.6;">Costo</th> <!-- Static first cell for "Price" label -->
+                <td v-for="extra in priceList.extras" :key="'cost-'+extra.id" style="border: 1px solid #ebebeb; border: 1px solid #ebebeb; padding: 8px; line-height: 1.6;">
+                    <template v-if="isEditing">
+                        <input class="form-control" type="number" v-model="extra.cost">
+                    </template>
+                    <template v-else>
+                        {{ extra.cost | currency }}
+                    </template>
+                </td>
+            </tr>
+          </table>
+        </div>
     </div>
   </template>
   
   <script>
+
   export default {
     data() {
       return {
@@ -166,16 +209,55 @@
           }
         },
         save() {
-          this.$parent.inPetition = true;
-          axios.put('https://apiv2.augenlabs.com/v1/lists/' + this.id, this.priceList).then(result => {
-            console.log(result);
-            alert('Cambios en lista de precios aplicados correctamente');
-            this.isEditing = false;
-            this.$parent.inPetition = false;
-          }).catch(error => {
-            this.$parent.inPetition = false;
-            console.log(error);
-          });
+
+            this.$parent.inPetition = true;
+
+            // price / cost Validation
+            for(const d of this.priceList.designs) {
+                for(const m of d.materials) {
+                    const material = m.material;
+                    for(const c of material.characteristics) {
+                        const characteristic = c.characteristic;
+                        const price = parseInt(c.price);
+                        const cost = parseInt(c.cost);
+
+                        // if(price != 0 && cost == 0) {
+                        //     this.$parent.showMessage(`<b>${ material.name }</b> en ${ characteristic.name} tiene un precio de $0`, 'error');
+                        //     this.$parent.inPetition = false;
+                        //     return
+                        // }
+
+                        if(isNaN(price)) {
+                            this.$parent.showMessage(`<b>${ material.name }</b> en ${ characteristic.name} no tiene un precio válido, no puede estar vacío`, 'warning');
+                            this.$parent.inPetition = false;
+                            return;
+                        }
+
+                        if(isNaN(cost)) {
+                            this.$parent.showMessage(`<b>${ material.name }</b> en ${ characteristic.name} no tiene un costo válido, no puede estar vacío`, 'warning');
+                            this.$parent.inPetition = false;
+                            return;
+                        }
+                        
+                        if(price != 0 && cost == 0) {
+                            this.$parent.showMessage(`<b>${ material.name }</b> en ${ characteristic.name} tiene un costo de $0`, 'warning');
+                            this.$parent.inPetition = false;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            axios.put('https://apiv2.augenlabs.com/v1/lists/' + this.id, this.priceList).then(result => {
+                console.log(result);
+                this.$parent.showMessage('Cambios en lista de precios aplicados correctamente',"success");
+					    	
+                this.isEditing = false;
+                this.$parent.inPetition = false;
+            }).catch(error => {
+                this.$parent.inPetition = false;
+                console.log(error);
+            });
         },
         filterTreats(mat, number) {
             if(!Array.isArray(this.currentTreatments[number]))
@@ -304,7 +386,7 @@
         let value = $event.target.value;
         let selectedCharacteristic = this.characteristics.find(c => c.id == value);
 
-        if(selectedCharacteristic.name == 'AR' || selectedCharacteristic.name == 'AL + AR') {
+        if(selectedCharacteristic.name == 'AR' || selectedCharacteristic.name == 'AL + AR' || selectedCharacteristic.name == 'HD + AR' || selectedCharacteristic.name == 'FREE FORM + AR') {
           let ARBlue =  this.characteristics.find(c => c.name == selectedCharacteristic.name + ' Azul');
           let ARGreen =  this.characteristics.find(c => c.name == selectedCharacteristic.name + ' Verde');
           let ARGold =  this.characteristics.find(c => c.name == selectedCharacteristic.name + ' Gold');
@@ -379,6 +461,20 @@
       validateIfAvailableM(materialId) {
         const currentMaterials = this.priceList.designs[0].materials.map(m => parseInt(m.material_id));
         return currentMaterials.includes(materialId);
+      },
+      addExtraSlot() {
+        if(this.priceList !== null) {
+            if(!Array.isArray(this.priceList.extras)) {
+                this.priceList.extras = [];
+            }
+
+            this.priceList.extras.push({
+                id: Date.now(),
+                name: '',
+                price: 0,
+                cost: 0
+            })
+        }
       }
     },
     mounted() {

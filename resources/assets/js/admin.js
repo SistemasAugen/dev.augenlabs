@@ -73,7 +73,29 @@ var app = new Vue({
             return 0;
         }
     },
-    methods:{
+    methods: {
+        userCan: function(permissionName) {
+            if (!this.user || !this.user.roles || !Array.isArray(this.user.roles)) {
+                return false;
+            }
+
+            // Loop through each role
+            for (let role of this.user.roles) {
+                // Check if permissions array exists and is an array
+                if (role.permissions && Array.isArray(role.permissions)) {
+                    // Loop through each permission in the role
+                    for (let permission of role.permissions) {
+                        // Check if the permission name matches the required permission
+                        if (permission.name === permissionName) {
+                            return true; // Permission found
+                        }
+                    }
+                }
+            }
+
+            // Permission not found in any roles
+            return false;
+        },
     	auth:function(){
     		axios.get(tools.url("/api/me")).then((response)=>{
 		    	this.user=response.data.user;

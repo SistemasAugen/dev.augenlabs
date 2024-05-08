@@ -120,8 +120,8 @@
             <form role="form" class="form-horizontal" v-if="order != null">
                 <div>
                     <div class="col-sm-6" style="text-align: left;">
-                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
-                        <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
+                        <img src="https://sistema.augenlabs.com/public/images/safilo_rx_color.png" style="width: 300px; height: 50px;" v-if="isSafilo">
+                        <img src="https://sistema.augenlabs.com/public/images/logo.png" style="height: 50px;" v-else>
                     </div>
                     <div class="col-sm-3"></div>
                     <div class="col-sm-3" style="text-align: right;">
@@ -230,10 +230,22 @@
                 <br>
                 <p style="text-align: left;"><b>ARMAZÓN</b></p>
                 <div class="form-group">
-                    <div class="col-sm-4" style="text-align: left;">
-                        <label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
-                        <v-select v-model="order.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" disabled/>
-                    </div>
+					<template v-if="isSafilo">
+						<div class="col-sm-2" style="text-align: left;">
+							<label style="font-weight:300;font-size: 13px;">ARMAZÓN:</label>
+							<input v-model="order.rx_tipo_armazon" class="form-control" id="rx_tipo_armazon" disabled>
+						</div>
+						<div class="col-sm-2" style="text-align: left;">
+							<label style="font-weight:300;font-size: 13px;">MARCA</label>
+							<input v-model="order.rx_marca" class="form-control" id="rx_marca" disabled>
+						</div>
+					</template>
+					<template v-else>
+						<div class="col-sm-4" style="text-align: left;">
+							<label style="font-weight:300;font-size: 13px;">TIPO DE ARMAZÓN:</label>
+							<v-select v-model="order.rx_tipo_armazon" :options="tipo_armazonOpcs" label="label" index="value" disabled/>
+						</div>
+					</template>
                     <div class="col-sm-2" style="text-align: left;">
                         <label style="font-weight:300;font-size: 13px;">HORIZONTAL "A"</label>
                         <input v-model="order.rx_horizontal_a" class="form-control" id="rx_horizontal_a" disabled>
@@ -296,6 +308,7 @@
 					{value:'Plástico',label:'Plástico'},
 					{value:'Ranurado',label:'Ranurado'},
 				],
+				isSafilo: false,
 			}
 		},
 		computed:{
@@ -351,13 +364,15 @@
 				this.order = null;
 				this.notificationId = notification.id;
 				const order = JSON.parse(notification.metadata);
+				const prefix = 'SF-';
+				this.isSafilo = order.rx_rx.includes(prefix);
 				this.order = order;
 
 				this.$refs.showRxModal.open();
 			},
 			approveRX() {
 				this.$parent.inPetition = true;
-				axios.post('api/v2/rx/approve/' + this.notificationId).then(result => {
+				axios.post('/api/v2/rx/approve/' + this.notificationId).then(result => {
 					this.$parent.showMessage(result.data.msg, "success");
 					this.$parent.inPetition = false;
 					this.$refs.showRxModal.close();
@@ -369,7 +384,7 @@
 			},
 			rejectRX() {
 				this.parent.inPetition = true;
-				axios.post('api/v2/rx/reject/' + this.notificationId).then(result => {
+				axios.post('/api/v2/rx/reject/' + this.notificationId).then(result => {
 					this.$parent.showMessage(response.data.msg, "success");
 					this.$parent.inPetition = false;
 					this.$refs.showRxModal.close();

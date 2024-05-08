@@ -168,6 +168,19 @@ class ClientsController extends Controller {
         $client->facturacion->town;
         $client->branch;
         $client->branch->laboratory;
+
+        $lists = DB::table('clients_lists')->where('client_id', $id)->get();
+        $data = [];
+        foreach($lists as $row) {
+            $data[] = [
+                'value' => $row->list_id, 
+                'label' => $row->label,
+                'discount' => $row->discount
+            ];
+        }
+
+        $client->lists = $data;
+
         return response()->json($client);
     }
 
@@ -232,6 +245,16 @@ class ClientsController extends Controller {
         if($request->has('is_safilo')) {
             $client->is_safilo = $request->is_safilo; 
         }
+
+        DB::table('clients_lists')->where('client_id', $id)->delete();
+
+        foreach($request->input('lists') as $row) {
+            $row['client_id'] = $id;
+            $row['list_id'] = $row['value'];
+            unset($row['value']);
+            DB::table('clients_lists')->insert($row);
+        }
+
         
         $client->save();
 
@@ -354,6 +377,7 @@ class ClientsController extends Controller {
         foreach ($clients as $key => $value) {
             $value->state;
             $value->town;
+            $value->lists = DB::table('clients_lists')->where('client_id', $value->id)->get();
         }
 
         return response()->json($clients);

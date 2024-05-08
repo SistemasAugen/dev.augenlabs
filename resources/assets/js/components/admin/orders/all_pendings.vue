@@ -165,7 +165,7 @@
             <form role="form" class="form-horizontal" v-if="selectedOrder != null">
                 <div>	
                     <div class="col-sm-6" style="text-align: left;">
-                        <img src="https://dev.augenlabs.com/public/images/logo.png" width="25%">
+                        <img src="https://sistema.augenlabs.com/public/images/logo.png" width="25%">
                         <div style="font-size: 25px;display: inline-block;padding-left: 10px;">|</div>
                     </div>
                     <div class="col-sm-3"></div>
@@ -516,12 +516,12 @@ export default {
             alertify.statusDialog(document.getElementById('status_table'));
         },
         changeStatus:function(status){
-            if(status == "entregado") {
-                if (this.order.client.status == 'Inactivo') {
-                    alert('Esta acción no está permitida para clientes bloqueados');
-                    return;
-                }
-            }
+            // if(status == "entregado") {
+            //     if (this.order.client.status == 'Inactivo') {
+            //         alert('Esta acción no está permitida para clientes bloqueados');
+            //         return;
+            //     }
+            // }
             alertify.confirm('¿Seguro que deseas cambiar el estatus de este RX?', ()=>{
                 this.$parent.inPetition=true;
                 let params={

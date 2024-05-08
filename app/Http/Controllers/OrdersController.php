@@ -47,10 +47,18 @@ class OrdersController extends Controller
 
         $client = Client::find($request->client_id);
         foreach ($request->cart as $key => $value) {
+            if(isset($value['rx_data']) && isset($value['rx_data']['rx_marca'])) {
+                if(is_array($value['metadata']))
+                    $value['metadata'][] = ['marca' => $value['rx_data']['rx_marca'] ];
+                else 
+                    $value['metadata'] = ['marca' => $value['rx_data']['rx_marca'] ];
+            }
+
             $order = new Order(array(
                 "purchase_id"=>$purchase->id,
                 "product_has_subcategory_id"=>$value['product_has_subcategory_id'],
                 "price"=>$value['price'],
+                "cost"=> isset($value['cost']) ? $value['cost'] : 0.0,
                 "discount"=>$value['discount'],
                 "discount_percent"=>$value['percent_discount'],
                 "service"=>$value['service'],
@@ -93,7 +101,7 @@ class OrdersController extends Controller
                 "rx_diagonal_ed" => isset($value['rx_data']['rx_diagonal_ed']) ? $value['rx_data']['rx_diagonal_ed'] : null,
                 "rx_puente" => isset($value['rx_data']['rx_puente']) ? $value['rx_data']['rx_puente'] : null,
                 "rx_observaciones" => isset($value['rx_data']['rx_observaciones']) ? $value['rx_data']['rx_observaciones'] : null,
-                
+                "metadata" => isset($value['metadata']) ? json_encode($value['metadata']) : '{}',
             ));
 
             $actualTotal = floatval($value['total']) - floatval($value['discount']);
@@ -120,8 +128,11 @@ class OrdersController extends Controller
             }
 
             if ($value['rx_data']) {
-                $value['rx_data']['pvd'] = $user->branch->name;
-                $value['rx_data']['laboratory'] = $user->branch->Laboratory->name;
+                $branch = Branch::find($order->branch_id);
+                $laboratory = Laboratory::findOrFail($order->laboratory_id);
+
+                $value['rx_data']['pvd'] =  $branch->name;
+                $value['rx_data']['laboratory'] = $laboratory->name;
 
                 $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $value['rx_data']])->setPaper('A5');
                 $content = $pdf->download()->getOriginalContent();
@@ -619,7 +630,7 @@ class OrdersController extends Controller
 
         if($checkform) {
             $laboratoryId = $request->laboratory_id;
-            $laboratory = Laboratory::findOrFaiL($laboratoryId);
+            $laboratory = Laboratory::findOrFail($laboratoryId);
             $data = $order->toArray();
             $data['pvd'] = $branch->name;
             $data['laboratory'] = $laboratory->name;
@@ -1470,6 +1481,8 @@ class OrdersController extends Controller
         $user = Auth::user();
         $order = Order::findOrFail($id);
         $branch = Branch::find($order->branch_id);
+        $laboratory = Laboratory::findOrFail($order->laboratory_id);
+
         $order->status = 'garantia';
         $order->warranty_date = date('Y-m-d H:i:s');
 
@@ -1534,7 +1547,7 @@ class OrdersController extends Controller
             }
             $data = $order->toArray();
             $data['pvd'] = $branch->name;
-            $data['laboratory'] = $branch->Laboratory->name;
+            $data['laboratory'] = $laboratory->name;
             $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
             $content = $pdf->download()->getOriginalContent();
             // Crear el archivo y almacenarlo en el storage
@@ -1737,9 +1750,12 @@ class OrdersController extends Controller
     
             if($checkform) {
                 $branch = Branch::find($order->branch_id);
+                $laboratory = Laboratory::findOrFail($order->laboratory_id);
+
                 $data = $order->toArray();
                 $data['pvd'] = $branch->name;
-                $data['laboratory'] = $branch->laboratory->name;
+                $data['laboratory'] = $laboratory->name;
+                
                 $pdf = PDF::loadView('plantillas.requestrx',['inputs' => $data])->setPaper('A5');
                 $content = $pdf->download()->getOriginalContent();
                 Storage::disk('public')->put('docs/order-'.$order->id.'.pdf',$content);

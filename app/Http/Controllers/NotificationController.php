@@ -16,9 +16,14 @@ class NotificationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($user_id)
-    {
-        $notifications=Notification::latest()->take(10)->get();
+    public function index($user_id = null) {
+        if(is_null($user_id)) {
+            $notifications = Notification::latest()->take(10)->get();
+        } else {
+            $notifications = Notification::where('user_id', $user_id)
+                                         ->take(10)
+                                         ->get();
+        }
 
         return response()->json($notifications);
     }
@@ -28,14 +33,15 @@ class NotificationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function resume($user_id)
-    {
-        $notifications=Notification::where('readed',false)->get();
-        if(empty($notifications)){
-            $notifications=Notification::take(4)->get();
-        }
-        $notifications=Notification::latest()->take(4)->get();
+    public function resume($user_id = null) {
+        $notifications = [];
 
+        if(!is_null($user_id)) {
+            $notifications=Notification::where('user_id', $user_id)
+                                       // ->where('readed',false)
+                                       ->get();
+        } 
+    
         return response()->json($notifications);
     }
 

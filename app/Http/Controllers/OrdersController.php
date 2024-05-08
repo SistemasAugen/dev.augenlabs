@@ -101,6 +101,7 @@ class OrdersController extends Controller
                 "rx_diagonal_ed" => isset($value['rx_data']['rx_diagonal_ed']) ? $value['rx_data']['rx_diagonal_ed'] : null,
                 "rx_puente" => isset($value['rx_data']['rx_puente']) ? $value['rx_data']['rx_puente'] : null,
                 "rx_observaciones" => isset($value['rx_data']['rx_observaciones']) ? $value['rx_data']['rx_observaciones'] : null,
+                "price_list" => isset($value['price_list']) ? $value['price_list'] : null,
                 "metadata" => isset($value['metadata']) ? json_encode($value['metadata']) : '{}',
             ));
 

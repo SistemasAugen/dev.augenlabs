@@ -1167,6 +1167,7 @@ export default {
               extras: extras,
               rx_data: row.rx_data,
               laboratory_id: row.laboratory_id,
+              price_list: ('price_list' in row.metadata) ? row.metadata.price_list : 'SIN DEFINIR',
               metadata: row.metadata != undefined ? row.metadata : []
             };
           });
@@ -1457,6 +1458,10 @@ export default {
           if(isDiscountByList) {
             // new method for discount
             const listData = this.client.lists.find(l => l.value == v.product.list_id);
+            const listName = listName.name;
+
+            this.$parent.sale.cart[k].metadata.price_list = listName;
+
             if(listData.discount > 0) {
               discount = {
                 discount: listData.discount
@@ -1915,7 +1920,8 @@ export default {
       });
     },
     canViewList(list_id) {
-      const listsIds = this.client.lists.map(l => l.value);
+      const availableLists = this.clients.list.filter(l => l.active);
+      const listsIds = availableLists.map(l => l.value);
       return listsIds.includes(list_id);
     },
     _addProduct(design, material, characteristic, price, cost) {
@@ -1941,7 +1947,6 @@ export default {
                 rx_rx:null,
                 rx_fecha:null,
                 rx_cliente:null,
-
                 rx_od_esfera:null,
                 rx_od_cilindro:null,
                 rx_od_eje:null,
@@ -1974,7 +1979,8 @@ export default {
             metadata: {
                 diseno: design.name,
                 material: material.name,
-                characteristic: characteristic.name
+                characteristic: characteristic.name,
+                list_id: design.pivot.list_id
             }
         };
 

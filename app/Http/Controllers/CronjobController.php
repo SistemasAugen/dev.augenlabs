@@ -33,15 +33,20 @@ class CronjobController extends Controller {
                     $nOrder->extras;
                 }
 
-                if($client->state_id == 14) { // JUST GDL
-                    if($mailCounter == 0) {
-                        // TESTING TO SEE
-                        Mail::send('emails.all_ok', compact('orders'), function ($m) use ($client) {
-                            $m->from('contacto@augenlabs.com', 'Augen Labs');
-                            $m->to('sistemas@augenlabs.com')->subject('Recibimos tus recetas y ¡TODO OK!');
-                            // $m->to('sleal@augenlabs.com')->subject('Recibimos tus recetas y ¡TODO OK!');
-                        });
-                    }
+                // if($client->state_id == 14) { // JUST GDL
+                    // if($mailCounter == 0) {
+                    //     // TESTING TO SEE
+                    //     // return view('emails.all_ok', compact('orders'));die;
+                    //     Mail::send('emails.all_ok', compact('orders'), function ($m) use ($client) {
+                    //         $m->from('contacto@augenlabs.com', 'Augen Labs');
+                            
+                    //         $m->to('edgar.desarrollo@gmail.com')->subject('Recibimos tus recetas y ¡TODO OK!');
+                    //         // $m->to('sistemas@augenlabs.com')->subject('Recibimos tus recetas y ¡TODO OK!');
+                            
+                    //         $m->getHeaders()->addTextHeader('Content-Type', 'text/html; charset=UTF-8');
+                    //     });
+                    //     echo 'Mail sent';die;
+                    // }
                     Mail::send('emails.all_ok', compact('orders'), function ($m) use ($client) {
                         $m->from('contacto@augenlabs.com', 'Augen Labs');
                         $emailsToSend = explode(';', $client->notification_mail);
@@ -52,7 +57,7 @@ class CronjobController extends Controller {
                     });
 
                     $mailCounter++;
-                }
+                // }
             }
         }
 
@@ -78,14 +83,19 @@ class CronjobController extends Controller {
                     $nOrder->extras;
                 }
 
-                if($client->state_id == 14) { // JUST GDL
-                    if($mailCounter == 0) {
-                        // TESTING TO SEE
-                        Mail::send('emails.order_ready', compact('orders'), function ($m) use ($client) {
-                            $m->from('contacto@augenlabs.com', 'Augen Labs');
-                            $m->to('sistemas@augenlabs.com')->subject('Tus recetas ¡ESTÁN LISTAS!');
-                        });
-                    }
+                // if($client->state_id == 14) { // JUST GDL
+                    // if($mailCounter == 0) {
+                    //     // TESTING TO SEE
+                    //     // return view('emails.order_ready', compact('orders'));
+                    //     Mail::send('emails.order_ready', compact('orders'), function ($m) use ($client) {
+                    //         $m->from('contacto@augenlabs.com', 'Augen Labs');
+                            
+                    //         $m->to('edgar.desarrollo@gmail.com')->subject('Recibimos tus recetas y ¡TODO OK!');
+                    //         //$m->to('sistemas@augenlabs.com')->subject('Tus recetas ¡ESTÁN LISTAS!');
+                    //         $m->getHeaders()->addTextHeader('Content-Type', 'text/html; charset=UTF-8');
+                    //     });
+                    //      echo 'Mail sent';die;
+                    // }
                     try {
                             Mail::send('emails.order_ready', compact('orders'), function ($m) use ($client) {
                             $m->from('contacto@augenlabs.com', 'Augen Labs');
@@ -97,7 +107,7 @@ class CronjobController extends Controller {
                         });
                     } catch(\Exception $e) {}
                     $mailCounter++;
-                }
+                // }
             }
         }
 
@@ -124,6 +134,9 @@ class CronjobController extends Controller {
             $m->to('sleal@augenlabs.com')->subject('Reporte de garantías');
             $m->to('operaciones@augenlabs.com')->subject('Reporte de garantías');
             $m->to('sistemas@augenlabs.com')->subject('Reporte de garantías');
+            
+            $m->to('procesos@augenlabs.com')->subject('Reporte de garantías');
+            
             $m->attachData($attachment, $filename);
         });
 

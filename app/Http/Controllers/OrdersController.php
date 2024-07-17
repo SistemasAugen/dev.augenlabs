@@ -923,6 +923,20 @@ class OrdersController extends Controller
         return response()->json(['msg'=>'La RX fue cobrada.']);
     }
 
+    public function payOnline(Request $request) {
+        $ids = $request->ids;
+        foreach ($ids as $key => $id) {
+            $order = Order::find($id);
+            $order->status = 'pagado';
+            $order->payed = true;
+            $order->payed_online = true;
+            $order->payment_date = date('Y-m-d');
+            $order->save();
+        }
+
+        return response()->json(['msg'=>'La RX fue pagada éxitosamente.']);
+    }
+
     public function payMany(Request $request){
         $ids=$request->ids;
         // dd($ids);

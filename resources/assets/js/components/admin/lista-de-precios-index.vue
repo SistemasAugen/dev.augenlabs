@@ -53,6 +53,11 @@
                                     <i class="fa fa-pencil"></i> Ver contenido
                                 </button>
                             </router-link>
+                            <router-link :to="'/lista-de-precios/' + list.id + '/assignacion'">
+                                <button class="btn btn-success btn-sm">
+                                    <i class="fa fa-eye"></i> Ver asignación
+                                </button>
+                            </router-link>
                         </td>
                     </tr>
                 </tbody>

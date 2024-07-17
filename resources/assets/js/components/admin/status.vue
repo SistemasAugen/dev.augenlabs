@@ -76,6 +76,10 @@
                             <td>GARANTÍA <i class="fas fa-arrow-right"></i> ENTREGADO</td>
                             <td><button class="btn btn-default" @click="filter('delivered_date2')" style="width: 80px !important; margin-right: 5px;">{{ data.garantia }}<span class="money">{{ data.money.garantia | currency }}</span></button> <a @click.prevent="downloadExcel('delivered_date2')" class="btn btn-success" v-if="data.garantia > 0"><i class="fas fa-file-excel"></i></a></td>
                         </tr>
+                        <tr>
+                            <td>PAGADO EN LINEA</td>
+                            <td><button class="btn btn-default" @click="filter('online_payment')" style="width: 80px !important; margin-right: 5px;">{{ data.pagado_en_linea }}<span class="money">{{ data.money.pagado_en_linea | currency }}</span></button> <a @click.prevent="downloadExcel('online_payment')" class="btn btn-success" v-if="data.pagado_en_linea > 0"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
                     </table>
                     <!-- <table class="table responsive"> -->
                         <!-- RX | FECHA CAPTURA |	LAB DESTINO	 | DISEÑO |	MATERIAL  |	AR | STATUS | CONT. DIAS | FECHA TERMINADO| FECHA ENTREGADO | FECHA PAGADO -->
@@ -139,6 +143,9 @@
                                     <th>Material</th>
                                     <th>Caracteristica</th>
                                     <th>Antireflejante</th>
+                                    <th>Subtotal</th>
+                                    <th>Descuentos sistema</th>
+                                    <th>Descuento</th>
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Cont. Días</th>
@@ -163,6 +170,9 @@
                                     <td v-else>
                                         -
                                     </td>
+                                    <td>{{ cart.total | currency }}</td>
+                                    <td>{{ cart.discount | currency }}</td>
+                                    <td>{{ cart.discount_admin | currency }}</td>
                                     <td>{{ getTotal(cart.total, cart.discount, cart.discount_admin, cart.iva) | currency }}</td>
                                     <td>
                                         <button class="btn btn-warning">{{ cart.status.replace("_"," ") }}</button>
@@ -188,11 +198,13 @@ export default {
             entregado: 0,
             pagado: 0,
             garantia: 0,
+            pagado_en_linea: 0,
             money: {
                 terminado: 0,
                 entregado: 0,
                 pagado: 0,
                 garantia: 0,
+                pagado_en_linea: 0,
             }
         },
         filters: {

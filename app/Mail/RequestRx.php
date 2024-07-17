@@ -30,11 +30,14 @@ class RequestRx extends Mailable
      */
     public function build()
     {
+        $filename = $this->inputs['pvd'] . ' - ' . date('d-m-Y') . '.pdf';  // Ensure the filename has a .pdf extension
+
         return $this->subject($this->title . ' ' . $this->inputs['pvd'] . ' - ' . date('d-m-Y') . ' RX ' . $this->inputs['rx_rx'])
             ->markdown('emails.requestrx')
-            ->with(['inputs'=> $this->inputs])
-            ->attachData($this->pdf, $this->inputs['pvd'].' - '.date('d-m-Y'),[
+            ->with(['inputs' => $this->inputs])
+            ->attachData($this->pdf, $filename, [
                 'mime' => 'application/pdf'
             ]);
     }
+
 }

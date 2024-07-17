@@ -54,6 +54,7 @@
                         <th>Nombre Comercial</th>
                         <th>Laboratorio</th>
                         <th>Fecha</th>
+                        <th>Lista de precios</th>
                         <th>Diseño</th>
                         <th>Material</th>
                         <th>Caracteristica</th>
@@ -77,6 +78,7 @@
                         <td>{{ cart.client.comertial_name }}</td>
                         <td>{{ cart.branch.name }}</td>
                         <td>{{ cart.created_at }}</td>
+                        <td>{{ cart.price_list }}</td>
                         <td>{{ cart.product.name }}</td>
                         <td>{{ cart.product.subcategory_name }}</td>
                         <td>{{ cart.product.type_name }}</td>

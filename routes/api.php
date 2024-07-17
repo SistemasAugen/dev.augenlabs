@@ -17,6 +17,7 @@ Route::group(['prefix' => 'v2'], function() {
             Route::post('rx/approve/{id}', 'AppController@rxApprove');
             Route::post('rx/reject/{id}', 'AppController@rxReject');
 			Route::get('rx/week_periods', 'AppController@getPeriods');
+			Route::post('rx/pay_online', 'OrdersController@payOnline');
 			Route::post('rx/load_period', 'AppController@getPeriod');
 			Route::get('products', 'AppController@products');
 			Route::get('types', 'AppController@types');

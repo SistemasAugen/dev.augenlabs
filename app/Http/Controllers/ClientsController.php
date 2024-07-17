@@ -148,6 +148,13 @@ class ClientsController extends Controller {
             ));
         }
 
+        foreach($request->input('lists') as $row) {
+            $row['client_id'] = $client->id;
+            $row['list_id'] = $row['value'];
+            unset($row['value']);
+            DB::table('clients_lists')->insert($row);
+        }
+
         return response()->json($client);
     }
 
@@ -478,14 +485,29 @@ class ClientsController extends Controller {
         //           // ->orderBy('created_at', 'ASC');
         // })->whereNotIn('id', [ 1862, 1901 ])
         // ->get();
-        $sql =
-        "   SELECT c.*
+        $sql = 
+        "SELECT c.*
             FROM clients c
-            INNER JOIN orders o ON o.client_id = c.id
-            WHERE MONTH(o.created_at) = $month AND YEAR(o.created_at) = $year
+            INNER JOIN (
+                SELECT o.client_id, MAX(o.created_at) AS last_order_date
+                FROM orders o
+                WHERE MONTH(o.created_at) = $month AND YEAR(o.created_at) = $year
+                GROUP BY o.client_id
+            ) last_order ON last_order.client_id = c.id
+            INNER JOIN (
+                SELECT o.client_id, MAX(o.created_at) AS second_last_order_date
+                FROM orders o
+                WHERE o.created_at < (
+                    SELECT MAX(o2.created_at)
+                    FROM orders o2
+                    WHERE o2.client_id = o.client_id
+                )
+                GROUP BY o.client_id
+            ) second_last_order ON second_last_order.client_id = c.id
+            WHERE DATEDIFF(last_order.last_order_date, second_last_order.second_last_order_date) >= 180
             AND c.id NOT IN (1862, 1901)
-            GROUP BY c.id
         ";
+    
 
         $result = DB::select(DB::raw($sql));
 
@@ -880,6 +902,10 @@ class ClientsController extends Controller {
                                      ->get();
                 }
             }
+        }
+
+        foreach ($clients as $key => $value) {
+            $value->lists = DB::table('clients_lists')->where('client_id', $value->id)->get();
         }
 
         return response()->json($clients);

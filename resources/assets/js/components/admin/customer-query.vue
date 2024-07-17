@@ -75,11 +75,38 @@ export default {
             this.$parent.inPetition = true;
 
             this.selectedClient = obj;
-            this.selectedClient.monofocalDiscount       = this.selectedClient.discounts.filter(d => d.type_id == 1).shift().discount;
-            this.selectedClient.bifocalDiscount         = this.selectedClient.discounts.filter(d => d.type_id == 2).shift().discount;
-            this.selectedClient.progresiveDiscount      = this.selectedClient.discounts.filter(d => d.type_id == 3).shift().discount;
-            this.selectedClient.packagesDiscount        = this.selectedClient.discounts.filter(d => d.type_id == 5).shift().discount;
-            this.selectedClient.finishedDiscount        = this.selectedClient.discounts.filter(d => d.type_id == 4).shift().discount;
+            this.selectedClient.monofocalDiscount       = 0;
+                this.selectedClient.bifocalDiscount     = 0;
+                this.selectedClient.progresiveDiscount  = 0;
+                this.selectedClient.packagesDiscount    = 0;
+                this.selectedClient.finishedDiscount    = 0;
+
+            try {
+                const assignedLists = obj.lists;
+                const monofocalDiscount = assignedLists.find(l => l.label == 'MONOFOCAL');
+                const bifocalDiscount = assignedLists.find(l => l.label == 'FLAT-TOP 28');
+                const progresiveDiscount = assignedLists.find(l => l.label == 'PROGRESIVOS');
+                const finishedDiscount = assignedLists.find(l => l.label == 'TERMINADOS');
+                const packagesDiscount = null; 
+
+                if (monofocalDiscount) {
+                    this.selectedClient.monofocalDiscount = monofocalDiscount.discount;
+                }
+                if (bifocalDiscount) {
+                    this.selectedClient.bifocalDiscount = bifocalDiscount.discount;
+                }
+                if (progresiveDiscount) {
+                    this.selectedClient.progresiveDiscount = progresiveDiscount.discount;
+                }
+                if (finishedDiscount) {
+                    this.selectedClient.finishedDiscount = finishedDiscount.discount;
+                }
+                if (packagesDiscount) {
+                    this.selectedClient.packagesDiscount = packagesDiscount.discount;
+                }
+            } catch(e) {
+                console.error("An error occurred:", e);
+            }
 
             setTimeout(this.mountTable, 1000);
         },

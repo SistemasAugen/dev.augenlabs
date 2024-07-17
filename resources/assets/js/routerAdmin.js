@@ -79,6 +79,9 @@ const MyRouter = new VueRouter({
 		
 		{ path: '/lista-de-precios', component: require(page+ 'lista-de-precios-index.vue').default, meta: { title: "Lista de precios"}},//Con parametro
 		{ path: '/lista-de-precios/:id', component: require(page+ 'lista-de-precios.vue').default, meta: { title: "Editar Lista de precio"}},//Con parametro
+		{ path: '/lista-de-precios/:id/assignacion', component: require(page+ 'lista-de-precios-assign.vue').default, meta: { title: "Editar Asignación"}},//Con parametro
+		
+		{ path: '/productos_extras', component: require(page + 'extras.vue').default, meta: { title: "Extras"}},
 	]
 
 });

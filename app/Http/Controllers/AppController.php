@@ -128,7 +128,7 @@ class AppController extends Controller {
              $nOrder->branch->laboratory;
 
              $nOrder->description = '';
-             if (isset($nOrder->product['id']))
+             // if (isset($nOrder->product['id']))
                  $nOrder->description .= $nOrder->product['name'] . ', ' . $nOrder->product['subcategory_name'] . ', ' .  $nOrder->product['type_name'];
              if (is_array($nOrder->extras) && count($nOrder->extras) > 0) {
                  $nOrder->description .= @implode(', ', array_map(function($e) {
@@ -155,7 +155,7 @@ class AppController extends Controller {
              $nOrder->extras;
 
              $nOrder->description = '';
-             if (isset($nOrder->product['id']))
+             // if (isset($nOrder->product['id']))
                  $nOrder->description .= $nOrder->product['name'] . ', ' . $nOrder->product['subcategory_name'] . ', ' .  $nOrder->product['type_name'];
              if (is_array($nOrder->extras) && count($nOrder->extras) > 0) {
                  $nOrder->description .= @implode(', ', array_map(function($e) {
@@ -288,7 +288,7 @@ class AppController extends Controller {
         $notification = new Notification();
         $notification->text = 'RX ' . $order->rx . ' - Solicitud desde el portal';
         $notification->type = 'rx';
-        // $notification->icon = 'primary';
+        $notification->icon = 'fa fa-eye';
         
         $user = User::where('laboratory_id', $branch->laboratory_id)
                     ->where('email', 'LIKE', 'coordinador%')

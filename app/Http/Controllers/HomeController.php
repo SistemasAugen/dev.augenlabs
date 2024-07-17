@@ -1141,6 +1141,7 @@ class HomeController extends Controller {
 			$notification = new Notification();
         	$notification->text = 'RX ' . $order->rx . ' - Solicitud desde WS';
         	$notification->type = 'rx';
+			$notification->icon = 'fa fa-eye';
 
 			$user = User::where('laboratory_id', $order->branch->laboratory_id)
                     ->where('email', 'LIKE', 'coordinador%')

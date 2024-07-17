@@ -245,10 +245,23 @@
             <div class="panel-title">
               <i class="fas fa-shopping-cart"></i> Pedido
             </div>
+
+            <div style="
+                text-align: right;
+                padding: 5px;
+            ">
+                          <button class="btn btn-success btn-sm" @click="selectType" style="
+            ">
+                <i class="fa fa-search"></i> Buscar producto
+              </button>
+              <button class="btn btn-warning btn-sm" @click="selectExtra" style="/* margin-top: 15px; */">
+                <i class="fa fa-plus"></i> Seleccionar extra
+              </button>
+            </div>
           </div>
 
           <div class="panel-body">
-            <div class="col-md-10">
+            <div class="col-md-12">
               <table class="table responsive">
                 <thead>
                   <tr>
@@ -256,7 +269,7 @@
                     <th>Diseño</th>
                     <th>Material</th>
                     <th>Caracteristica</th>
-                    <th v-if="!isAugenLabs">Extras</th>
+                    <th v-if="!isAugenLabs" style="display: none;">Extras</th>
                     <th v-else>Cantidad</th>
                     <th>Costo</th>
                     <th v-if="!isAugenLabs">Servicio</th>
@@ -267,69 +280,108 @@
                 </thead>
                 <tbody>
                   <tr v-for="(cart, i) in $parent.sale.cart" :key="i">
-                    <td>{{ cart.rx }}</td>
-                    <td>{{ cart.product.name }}</td>
-                    <td>{{ cart.product.category_name }}</td>
-                    <td>{{ cart.product.type_name }}</td>
-                    <td v-if="!isAugenLabs">
-                      {{
-                        cart.extras
-                          .map((row) => {
-                            return row.name;
-                          })
-                          .join(", ")
-                      }}
-                      <button
-                        class="btn btn-sm btn-warning"
-                        @click="selectOrder(cart)"
-                      >
-                        <i class="fa fa-plus"></i>
-                      </button>
-                    </td>
-                    <td v-else>
-                      <input
-                        
-                        class="form-control"
-                        v-model="cart.service"
-                        @change="getDiscounts"
-                        
-                        @keypress="isNumber($event)"
-                      />
-                    </td>
-                    <td>${{ cart.price }}</td>
-                    <td v-if="!isAugenLabs">
-                      <input
-                        
-                        v-model="cart.service"
-                        @change="getDiscounts"
-                        
-                        @keypress="isNumber($event)"
-                        width="50px"
-                        id="aaaa"
-                      />
-                    </td>
-                    <td>${{ cart.total }}</td>
-                    <td>
-                      <button v-if="cart.rx_data.have_data" class="btn btn-success btn-sm" @click="openModalRx(i)">RX</button>
-                      <button v-else class="btn btn-info btn-sm" @click="openModalRx(i)">RX</button>
-                    </td>
-
-                    <td>
-                      <button
-                        class="btn btn-danger btn-sm"
-                        @click="deleteProduct(i)"
-                      >
-                        Borrar
-                      </button>
-                    </td>
-                  </tr>
+                    <!-- If RX = "0000" is an extra product not an RX -->
+                    <template v-if="cart.rx == '0000'">
+                        <td>-</td>
+                        <td colspan="3" style="text-align: center;">{{ cart.product.name }}</td>
+                        <td v-if="!isAugenLabs" style="display: none;">
+                          {{
+                            cart.extras
+                              .map((row) => {
+                                return row.name;
+                              })
+                              .join(", ")
+                          }}
+                          <button
+                            class="btn btn-sm btn-warning"
+                            @click="selectOrder(cart)"
+                          >
+                            <i class="fa fa-plus"></i>
+                          </button>
+                        </td>
+                        <td v-else>
+                          <input
+                            
+                            class="form-control"
+                            v-model="cart.service"
+                            @change="getDiscounts"
+                            
+                            @keypress="isNumber($event)"
+                          />
+                        </td>
+                        <td>${{ cart.price }}</td>
+                        <td>-</td>
+                        <td>${{ cart.total }}</td>
+                        <td>-</td>
+                        <td>
+                          <button
+                            class="btn btn-danger btn-sm"
+                            @click="deleteProduct(i)"
+                          >
+                            Borrar
+                          </button>
+                        </td>
+                      </template> 
+                      <template v-else>
+                        <td>{{ cart.rx }}</td>
+                        <td>{{ cart.product.name }}</td>
+                        <td>{{ cart.product.category_name }}</td>
+                        <td>{{ cart.product.type_name }}</td>
+                        <td v-if="!isAugenLabs" style="display: none;">
+                          {{
+                            cart.extras
+                              .map((row) => {
+                                return row.name;
+                              })
+                              .join(", ")
+                          }}
+                          <button
+                            class="btn btn-sm btn-warning"
+                            @click="selectOrder(cart)"
+                          >
+                            <i class="fa fa-plus"></i>
+                          </button>
+                        </td>
+                        <td v-else>
+                          <input
+                            
+                            class="form-control"
+                            v-model="cart.service"
+                            @change="getDiscounts"
+                            
+                            @keypress="isNumber($event)"
+                          />
+                        </td>
+                        <td>${{ cart.price }}</td>
+                        <td v-if="!isAugenLabs">
+                          <input
+                            
+                            v-model="cart.service"
+                            @change="getDiscounts"
+                            
+                            @keypress="isNumber($event)"
+                            width="50px"
+                            id="aaaa"
+                          />
+                        </td>
+                        <td>${{ cart.total }}</td>
+                        <td>
+                          <button v-if="cart.rx_data.have_data" class="btn btn-success btn-sm" @click="openModalRx(i)">RX</button>
+                          <button v-else class="btn btn-info btn-sm" @click="openModalRx(i)">RX</button>
+                        </td>
+    
+                        <td>
+                          <button
+                            class="btn btn-danger btn-sm"
+                            @click="deleteProduct(i)"
+                          >
+                            Borrar
+                          </button>
+                        </td>
+                      </template>
+                    </tr>
                 </tbody>
               </table>
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-success" @click="selectType">
-                <i class="fa fa-search"></i> Buscar producto
-              </button>
             </div>
           </div>
         </div>
@@ -550,26 +602,26 @@
           </div>
         </div>
       </div>
-      <div id="extras_table">
+      <div id="extras_table" style="max-height: 400px !important; overflow-y: scroll;">
         <div class="row">
           <div class="col-md-12">
             <h3>Seleccionar extra:</h3>
           </div>
           <div
-            class="col-md-6 col-md-offset-3"
+            class="col-md-12"
             v-for="extra in extras"
             :key="extra.id"
           >
             <br />
             <br />
-            <button class="btn btn-default btn-block" @click="addExtra(extra)">
+            <button class="btn btn-default btn-block" @click="_addExtra(extra)">
               {{ extra.name }} - ${{ extra.price }}
             </button>
           </div>
           <div class="col-md-6 col-md-offset-3">
             <br />
             <br />
-            <button class="btn btn-warning btn-block" @click="addExtra()">
+            <button class="btn btn-warning btn-block" @click="cancelExtra">
               Omitir
             </button>
           </div>
@@ -1244,12 +1296,8 @@ export default {
               types[i].canSee = true;
               continue;
             }
-            if ([25, 34, 46].includes(this.$parent.user.id)) {
-              types[i].canSee = true;
-            } else {
-              if (types[i].id == 10) types[i].canSee = false;
-              else types[i].canSee = true;
-            }
+
+            types[i].canSee = true;
           }
 
           this.types = types;
@@ -1458,7 +1506,7 @@ export default {
           if(isDiscountByList) {
             // new method for discount
             const listData = this.client.lists.find(l => l.value == v.product.list_id);
-            const listName = listName.name;
+            const listName = listData.label;
 
             this.$parent.sale.cart[k].metadata.price_list = listName;
 
@@ -1636,6 +1684,22 @@ export default {
       }
       this.$parent.sale.cart.push(this.order);
       this.order = {};
+      alertify.closeAll();
+    },
+    getExtras() {
+        this.$parent.inPetition = true;
+        axios.get('https://apiv2.augenlabs.com/v1/extras').then(result => {
+            console.log(result);
+            this.extras = result.data;
+            this.$parent.inPetition = false;
+            window.scrollTo(0, 0);
+        });
+    },
+    selectExtra() {
+      this.getExtras();
+      alertify.extrasDialog(document.getElementById("extras_table"));
+    },
+    cancelExtra() {
       alertify.closeAll();
     },
     selectOrder: function (cart) {
@@ -1915,14 +1979,78 @@ export default {
       // this.$parent.inPetition = true;
       axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
         console.log(result);
-        this.lists = result.data;
+        this.lists = result.data.filter(l => l.active == 1);
         console.log('lists loaded', this.lists)
       });
     },
     canViewList(list_id) {
-      const availableLists = this.clients.list.filter(l => l.active);
-      const listsIds = availableLists.map(l => l.value);
+      const listsIds = this.client.lists.map(l => l.value);
       return listsIds.includes(list_id);
+    },
+    _addExtra(extra) {
+      const price = extra.price;
+      const cost = extra.cost;
+
+      var order = {
+            id: Date.now(),
+            product_has_subcategory_id: null,
+            price: price,
+            cost: cost,
+            discount: 0,
+            total: price,
+            service: 0,
+            extras: [],
+            product: {
+                name: extra.name,
+                category_name: extra.name,
+                type_name: extra.name,
+            },
+            rx: '0000',
+            not_ar: 0,
+            rx_data: {
+                rx_rx:null,
+                rx_fecha:null,
+                rx_cliente:null,
+                rx_od_esfera:null,
+                rx_od_cilindro:null,
+                rx_od_eje:null,
+                rx_od_adicion:null,
+                rx_od_dip:null,
+                rx_od_altura:null,
+                rx_od_esfera:null,
+
+                rx_od_esfera_dos:null,
+                rx_od_cilindro_dos:null,
+                rx_od_eje_dos:null,
+                rx_od_adicion_dos:null,
+                rx_od_dip_dos:null,
+                rx_od_altura_dos:null,
+                rx_od_esfera_dos:null,
+                
+                rx_diseno:null,
+                rx_material:null,
+                rx_tipo_ar:null,
+                rx_tallado:null,
+                rx_tipo_armazon:null,
+                rx_horizontal_a:null,
+                rx_vertical_b:null,
+                rx_diagonal_ed:null,
+                rx_puente:null,
+                rx_observaciones:null,
+                rx_servicios:null,
+                have_data:false
+            },
+            metadata: {
+                diseno: extra.name,
+                material: extra.name,
+                characteristic: extra.name,
+            }
+        };
+
+        alertify.closeAll();
+        this.$parent.sale.cart.push(order);
+        this.getDiscounts();
+        this.rx = "";
     },
     _addProduct(design, material, characteristic, price, cost) {
         var order = {

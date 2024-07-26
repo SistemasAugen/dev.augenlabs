@@ -54,8 +54,8 @@ class AppController extends Controller {
             // if(!\Hash::check($credentials['password'], $client->password))
             //     return response()->json(Response::set(false, 'Usuario y/o contraseña incorrecto'), 401);
 
-            if($client->status != 'Activo')
-                return response()->json(Response::set(false, 'Usuario Inactivo'), 401);
+            // if($client->status != 'Activo')
+            //     return response()->json(Response::set(false, 'Usuario Inactivo'), 401);
         
             $cachedOtp = Cache::get('otp_' . $credentials['email']);
 

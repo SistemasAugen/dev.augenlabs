@@ -19,8 +19,6 @@ Route::get('/test_connection', function() {
     }
 });
 
-
-
 Route::get('/clear-cache', function() {
     Artisan::call('cache:clear');
     Artisan::call('route:clear');

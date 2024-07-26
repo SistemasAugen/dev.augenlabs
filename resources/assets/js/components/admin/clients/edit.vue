@@ -49,10 +49,10 @@
 										<input-form name="contacto_celular" text="Origen del cliente" :data.sync="client.contact_celphone"></input-form>
 										<hr/>
 										<checkbox-form text="Cliente SAFILO" :data.sync="client.is_safilo" value="1" name="is_safilo" key="is_safilo"></checkbox-form>
-										<hr/>
+										<!-- <hr/>
 										<div v-if="lists.length > 0">
 											<select-form text="Listas de precios" name="lists" :options="lists" :data.sync="client.lists" :multiple="true"></select-form>
-										</div>
+										</div> -->
 									</div>
 									<div class="tab-pane" id="v-discounts">
 										<div class="row">
@@ -85,16 +85,30 @@
 												</table>
 											</div>
 										</div>
-										<hr/>
-										<h3>Descuentos por producto</h3>
-										<table class="table table-bordered" style="margin: 0 auto; width: 600px;">
-											<template v-for="list in client.lists">
-												<tr>
-													<td class="discount-header" style="background: #000; text-align: center; color: #fff;">{{ list.label }}</td>
-													<td><input type="number" class="form-control" v-model="list.discount"></td>
-												</tr>
-											</template>
-										</table>	
+										<hr style="margin-top: 0;"/>
+										<div>
+											<div class="form-group">
+												<label for="field-1" class="col-sm-3 control-label">Listas de precios<span style="display: none;">*</span>:</label> 
+												<div class="col-sm-7">
+													<input class="form-control" :value="assignedLists" readonly>
+												</div>
+											</div>
+										</div>
+										<div>
+											<div class="form-group">
+												<label for="field-1" class="col-sm-3 control-label">Descuentos por lista de precios<span style="display: none;">*</span>:</label> 
+												<div class="col-sm-7">
+													<table class="table table-bordered" style="margin: 0 auto; width: 600px;">
+														<template v-for="list in client.lists">
+															<tr>
+																<td class="discount-header" style="background: #000; text-align: center; color: #fff;">{{ list.label }}</td>
+																<td><input type="number" class="form-control" v-model="list.discount"></td>
+															</tr>
+														</template>
+													</table>	
+												</div>
+											</div>
+										</div>
 										<!-- <table v-for="typ in types" class="table table-bordered" :key="typ.id">
 											<thead>
 												<tr>
@@ -269,6 +283,12 @@
 					return 'min:5|required';
 				}
 			},
+			assignedLists: function() {
+				if(this.lists.length == 0)
+					return 'No hay listas de precios disponibles';
+				
+				return this.lists.map(l => l.label).join(',');
+			}
 		},
         watch:{
             'client.state.value':{
@@ -513,7 +533,9 @@
 			},
 			getLists() {
 				// this.$parent.inPetition = true;
-				axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
+				console.log(9)
+				axios.get(tools.url("/api/lists/" + this.id + "/available")).then(result => {
+				// axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
 					console.log(result);
 					this.lists = result.data;
 					this.lists=jQuery.map(this.lists,(row)=>{
@@ -525,9 +547,9 @@
 		},
 		mounted(){
 			this.userId = this.$parent.user.id; 
-			console.log('canEdit' + this.allowedUsers.includes(this.userId));
+			console.log('canEdit', this.allowedUsers.includes(this.userId));
 			if(this.$route.params.id){
-				this.id=this.$route.params.id;
+				this.id = this.$route.params.id;
 				this.getClient();
 			}
             this.getTypes();

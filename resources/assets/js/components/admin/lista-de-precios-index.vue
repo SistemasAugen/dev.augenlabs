@@ -55,7 +55,7 @@
                             </router-link>
                             <router-link :to="'/lista-de-precios/' + list.id + '/assignacion'">
                                 <button class="btn btn-success btn-sm">
-                                    <i class="fa fa-eye"></i> Ver asignación
+                                    <i class="fa fa-eye"></i> Asignación
                                 </button>
                             </router-link>
                         </td>

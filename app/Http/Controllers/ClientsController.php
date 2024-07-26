@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\ListController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -176,13 +177,15 @@ class ClientsController extends Controller {
         $client->branch;
         $client->branch->laboratory;
 
-        $lists = DB::table('clients_lists')->where('client_id', $id)->get();
+        $assignedListsData = (new ListController())->getClientLists($id);
+        $assignedListsData = $assignedListsData->getContent();
+        $assignedLists = json_decode($assignedListsData);
+
         $data = [];
-        foreach($lists as $row) {
+        foreach($assignedLists as $row) {
             $data[] = [
-                'value' => $row->list_id, 
-                'label' => $row->label,
-                'discount' => $row->discount
+                'value' => $row->id, 
+                'label' => $row->name
             ];
         }
 

@@ -1385,7 +1385,7 @@ export default {
 
       console.log('hasList', this.hasLists);
       if(this.hasLists) {
-			  this.getLists();
+			  this.getLists(client_id);
       }
 
       if(this.hasLists == false) {
@@ -1975,17 +1975,21 @@ export default {
           this.$parent.sale.cart[indx]['rx_data']['have_data'] = checkform;
         // }
     },
-    getLists() {
+    getLists(client_id) {
       // this.$parent.inPetition = true;
-      axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
+	  axios.get(tools.url("/api/lists/" + client_id + "/available")).then(result => {
+      // axios.get('https://apiv2.augenlabs.com/v1/lists').then(result => {
         console.log(result);
         this.lists = result.data.filter(l => l.active == 1);
         console.log('lists loaded', this.lists)
       });
     },
     canViewList(list_id) {
-      const listsIds = this.client.lists.map(l => l.value);
-      return listsIds.includes(list_id);
+      if(this.client && Array.isArray(this.client.lists)) {
+        const listsIds = this.client.lists.map(l => l.value);
+        return listsIds.includes(list_id);
+      }
+      return false;
     },
     _addExtra(extra) {
       const price = extra.price;
